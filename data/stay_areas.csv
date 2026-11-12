@@ -1,0 +1,19 @@
+city,state,name,description,nearby_attractions,budget_category,source_url
+Agra,Uttar Pradesh,Tajganj,"A practical base for visitors focused on the Taj Mahal's east and south gates, with a range of guest houses and hotels.",Taj Mahal|Taj East Gate|Shilpgram,Mixed,https://tajmahal.gov.in/accomodation.aspx
+Agra,Uttar Pradesh,Fatehabad Road,"A hotel corridor with several accommodation choices and access to central Agra visitor services.",Taj Mahal|Agra Fort|Taj Nagari,Mixed,https://tajmahal.gov.in/accomodation.aspx
+Agra,Uttar Pradesh,Delhi Gate,"A central option with budget lodging and local transport connections.",Agra Fort|Sadar Bazaar,Budget,https://tajmahal.gov.in/accomodation.aspx
+Delhi,Delhi,Paharganj,"A budget-oriented area around New Delhi Railway Station, with many guest houses and economical hotels.",New Delhi Railway Station|Connaught Place|Jama Masjid,Budget,https://delhitourism.gov.in/accommodation/budget_eco_hotel.html
+Delhi,Delhi,Chandni Chowk,"A historic-market area useful for visitors exploring Old Delhi on foot and by metro.",Red Fort|Jama Masjid|Chandni Chowk,Mixed,https://delhitourism.gov.in/accommodation/budget_eco_hotel.html
+Delhi,Delhi,Connaught Place,"Central commercial and cultural heart of Delhi with excellent metro connectivity and diverse hotels.",India Gate|Janpath|Gurudwara Bangla Sahib,Mixed,https://delhitourism.gov.in/accommodation/
+Jaipur,Rajasthan,Railway Station,"A convenient transport hub with a government-run hotel and onward connections to Jaipur's main attractions.",Hawa Mahal|City Palace|Amber Fort,Mixed,https://rtdc.tourism.rajasthan.gov.in/Client/HotelDetails.aspx?HotelID=JaipurSwagatam
+Jaipur,Rajasthan,Old City,"A heritage-focused base close to Jaipur's walled-city sights, markets, and historic landmarks.",Hawa Mahal|City Palace|Jantar Mantar,Mixed,https://www.tourism.rajasthan.gov.in/
+Jaipur,Rajasthan,Bani Park,"A quiet, green residential area with charming heritage havelis and budget boutique hotels.",City Palace|Sindhi Camp,Budget,https://www.tourism.rajasthan.gov.in/
+Varanasi,Uttar Pradesh,Luxa,"A central neighborhood with access to Kashi Vishwanath Temple, Dashashwamedh Ghat, and local markets.",Kashi Vishwanath Temple|Dashashwamedh Ghat|Ganga Ghats,Mixed,https://hotelvishwanath.in/
+Varanasi,Uttar Pradesh,Lanka,"A south Varanasi base near BHU and the riverfront, with road access to the major ghats.",BHU|Assi Ghat|Kashi Vishwanath Temple,Mixed,https://rudraganga.in/
+Varanasi,Uttar Pradesh,Assi Ghat,"A spiritual and cultural hub by the Ganges with serene guest houses and walking access to evening aartis.",Assi Ghat|Tulsi Ghat|Sankat Mochan Temple,Budget,https://hotelvishwanath.in/
+Goa,Goa,Panaji,"State capital featuring Portuguese heritage quarters, riverside promenades, and budget city hotels.",Miramar Beach|Fontainhas Heritage Quarter|Mandovi River,Mixed,https://goatourism.gov.in/stay/
+Goa,Goa,Calangute / Baga,"Lively North Goa beach hub with abundant beach shacks, backpacker hostels, and resorts.",Calangute Beach|Baga Beach|Aguada Fort,Mixed,https://goatourism.gov.in/stay/
+Mumbai,Maharashtra,Colaba,"Historic South Mumbai district within walking distance of the Gateway of India and harbor front.",Gateway of India|Marine Drive|Colaba Causeway,Mixed,https://mumbai.gov.in/tourism/stay
+Mumbai,Maharashtra,Bandra,"Trendy coastal suburb known for Bandstand promenade, vibrant cafes, and boutique lodgings.",Bandstand|Mount Mary Church|Carter Road,Mixed,https://mumbai.gov.in/tourism/stay
+Bangalore,Karnataka,MG Road / Brigade Road,"Central business and shopping district close to metro lines, Cubbon Park, and dining corridors.",Cubbon Park|Vidhana Soudha|Lalbagh,Mixed,https://karnatakatourism.org/stay
+Amritsar,Punjab,Golden Temple Environs,"Walking distance to Sri Harmandir Sahib and Jallianwala Bagh, featuring economical pilgrim sarai and hotels.",Golden Temple|Jallianwala Bagh|Partition Museum,Budget,https://punjabtourism.punjab.gov.in/

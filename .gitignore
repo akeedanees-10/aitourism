@@ -1,0 +1,30 @@
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python Bytecode and Caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.pytest_cache/
+.coverage
+htmlcov/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+tourism.db
+test_tourism.db
+
+# Environment and Secret files
+.env
+.env.local
+
+# Operating System and IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,3227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#126b50">
+    <title>VoyAIge | Advanced Personalized Tourism Recommendation System</title>
+
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <style>
+        :root {
+            --primary: #126b50;
+            --primary-dark: #0b4c39;
+            --primary-light: #239568;
+            --accent-bg: #e8f5ec;
+            --light-bg: #f4f8f5;
+            --card-bg: #ffffff;
+            --text: #1a2e22;
+            --muted: #5e7367;
+            --border: #d2e3d7;
+            --danger: #b42318;
+            --warning: #b54708;
+            --shadow: 0 8px 24px rgba(18, 107, 80, 0.08);
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--light-bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Navigation Header */
+        header.site-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .nav-container {
+            width: min(1200px, 94%);
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .brand-icon {
+            background: white;
+            color: var(--primary);
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .brand-text h1 {
+            font-size: 20px;
+            letter-spacing: -0.5px;
+            margin: 0;
+        }
+
+        .brand-text span {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.85;
+        }
+
+        nav.main-nav {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(255,255,255,0.2);
+            border-color: white;
+        }
+
+        .user-auth-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-btn {
+            background: white;
+            color: var(--primary-dark);
+            border: 0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .auth-btn:hover {
+            background: #e1f5e9;
+        }
+
+        /* Hero Banner */
+        .hero {
+            background: linear-gradient(135deg, #0b4c39, #1c7c59);
+            color: white;
+            text-align: center;
+            padding: 50px 20px 60px;
+        }
+
+        .hero h2 {
+            font-size: clamp(28px, 4vw, 42px);
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+
+        .hero p {
+            max-width: 650px;
+            margin: auto;
+            color: #d8f3e5;
+            font-size: 16px;
+        }
+
+        /* Main Container */
+        main.container {
+            width: min(1200px, 94%);
+            margin: 30px auto 60px;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Panels & Cards */
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: clamp(20px, 3vw, 32px);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .panel-header {
+            margin-bottom: 22px;
+        }
+
+        .panel-header h3 {
+            font-size: 22px;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+        }
+
+        .panel-header p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field label {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .field input, .field select {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .field input:focus, .field select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(18, 107, 80, 0.15);
+        }
+
+        .field .hint {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: 0;
+            padding: 13px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--accent-bg);
+            color: var(--primary-dark);
+            border: 1px solid var(--border);
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #d5eedd;
+        }
+
+        /* Status message */
+        .status-box {
+            margin-top: 18px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status-box.active { display: block; }
+        .status-box.loading { background: #eef6f1; color: var(--primary-dark); }
+        .status-box.error { background: #fee4e2; color: var(--danger); border: 1px solid #fecdca; }
+        .status-box.success { background: #e8f5ec; color: var(--primary-dark); }
+
+        /* Destination Cards Grid */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        .place-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .place-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(18, 107, 80, 0.12);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            gap: 8px;
+        }
+
+        .card-tag {
+            background: var(--accent-bg);
+            color: var(--primary-dark);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .place-card h4 {
+            font-size: 19px;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .place-location {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+
+        /* Score & Progress */
+        .score-wrap {
+            margin-bottom: 16px;
+            background: #f7faf8;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2ede5;
+        }
+
+        .score-headline {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .score-val {
+            color: var(--primary);
+            font-size: 17px;
+        }
+
+        .progress-bar {
+            height: 7px;
+            background: #e1ede4;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #249769, #126b50);
+            border-radius: 10px;
+        }
+
+        .card-explanation {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 6px;
+            line-height: 1.4;
+            font-style: italic;
+        }
+
+        /* Key Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .metric {
+            background: #f8faf8;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .metric small {
+            display: block;
+            color: var(--muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .metric strong {
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .card-actions button {
+            flex: 1;
+            padding: 9px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: 0.2s;
+        }
+
+        .btn-view {
+            background: var(--accent-bg);
+            color: var(--primary-dark);
+            border-color: #cde4d3;
+        }
+
+        .btn-view:hover { background: #d7ecdc; }
+
+        .btn-save {
+            background: white;
+            color: var(--text);
+        }
+
+        .btn-save:hover { background: #f0f4f1; }
+
+        .stay-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 18px;
+        }
+
+        .stay-filters .field span {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .stay-filters select, .stay-filters input {
+            width: 100%;
+            min-height: 42px;
+            padding: 9px 11px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            color: var(--text);
+        }
+
+        .stay-search-button { margin-top: 0; width: 100%; min-height: 42px; }
+
+        .stay-area-section { margin-top: 24px; }
+        .stay-area-section h4 { margin-bottom: 10px; color: var(--primary-dark); }
+
+        .stay-areas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 12px;
+        }
+
+        #view-stays #accommodationsGrid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+        }
+
+        .stay-area-card, .stay-listing-card, .selected-stay-panel {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .stay-area-card h5, .stay-listing-card h5 { color: var(--primary-dark); font-size: 16px; margin-bottom: 4px; }
+        .stay-area-card p, .stay-listing-card p { color: var(--muted); font-size: 13px; margin-top: 6px; }
+        .stay-area-meta { color: var(--primary); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .stay-listing-card { display: flex; flex-direction: column; justify-content: space-between; min-height: 220px; }
+        .stay-price { color: var(--primary-dark); font-weight: 800; font-size: 17px; margin-top: 8px; }
+        .stay-source-note { font-size: 11px !important; font-style: italic; }
+        .stay-listing-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+        .stay-listing-actions a, .stay-listing-actions button {
+            flex: 1;
+            min-width: 120px;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--primary-dark);
+            background: var(--accent-bg);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .stay-listing-actions button { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .selected-stay-panel { margin: 0 0 18px; display: none; }
+        .selected-stay-panel.active { display: block; }
+        .selected-stay-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .selected-stay-controls input { width: 90px; padding: 7px; border: 1px solid var(--border); border-radius: 7px; }
+        .selected-stay-controls button { border: 0; color: var(--danger); background: transparent; font-weight: 700; cursor: pointer; }
+
+        /* Map Container */
+        #map-container {
+            height: 520px;
+            width: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-top: 14px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(11, 76, 57, 0.45);
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-box {
+            background: white;
+            border-radius: var(--radius);
+            width: min(540px, 96%);
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 28px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: #eef3ef;
+            border: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+        }
+
+        .modal-close:hover { background: #e0eae2; color: var(--text); }
+
+        /* Itinerary Planner */
+        .day-box {
+            background: #f8faf8;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .day-activities-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .activity-item {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .activity-time {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        .budget-alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 18px;
+            display: none;
+        }
+
+        .budget-alert.warning {
+            display: block;
+            background: #fef0c7;
+            color: var(--warning);
+            border: 1px solid #fedf89;
+        }
+
+        .budget-alert.success {
+            display: block;
+            background: #ecfdf3;
+            color: #027a48;
+            border: 1px solid #a6f4c5;
+        }
+
+        .budget-alert.info {
+            display: block;
+            background: #f0f7f3;
+            color: var(--primary-dark);
+            border: 1px solid var(--border);
+        }
+
+        /* Cost Breakdown Component */
+        .cost-breakdown-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(18, 107, 80, 0.04);
+        }
+
+        .cost-breakdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .cost-item {
+            background: var(--light-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+        }
+
+        .cost-item small {
+            color: var(--muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .cost-item strong {
+            font-size: 16px;
+            color: var(--primary-dark);
+            display: block;
+        }
+
+        .cost-item.total-item {
+            background: var(--accent-bg);
+            border-color: var(--primary-light);
+        }
+
+        .cost-item.total-item strong {
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        /* Pill filters */
+        .pill-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 8px 0;
+        }
+
+        .pill-btn {
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: #fff;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pill-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .pill-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .pill-btn.budget-pill.active {
+            background: #027a48;
+            border-color: #027a48;
+            color: #fff;
+        }
+
+        .tier-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 6px;
+        }
+
+        .tier-tag.budget { background: #ecfdf3; color: #027a48; border: 1px solid #a6f4c5; }
+        .tier-tag.standard { background: #eff8ff; color: #175cd3; border: 1px solid #b2ddff; }
+        .tier-tag.premium { background: #fdf2fa; color: #c11574; border: 1px solid #fcceee; }
+
+        /* Itinerary subpanels for stay & food */
+        .itin-subpanel {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .itin-subpanel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .itin-subpanel-header h4 {
+            color: var(--primary-dark);
+            font-size: 15px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .food-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 180px;
+        }
+
+        .food-card h5 { color: var(--primary-dark); font-size: 15px; margin: 4px 0 2px; }
+        .food-card p { font-size: 12px; color: var(--muted); margin: 3px 0; }
+        .food-price { font-weight: 700; color: var(--primary); font-size: 14px; margin-top: 6px; }
+
+        .saved-itin-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .saved-itin-card h4 { color: var(--primary-dark); font-size: 16px; margin-bottom: 4px; }
+        .saved-itin-meta { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+        .saved-itin-breakdown { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+        .saved-itin-badge {
+            background: var(--light-bg);
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* AI Assistant Chat */
+        .chat-box {
+            display: flex;
+            flex-direction: column;
+            height: 480px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fcfdfc;
+            overflow: hidden;
+        }
+
+        .chat-history {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-bubble {
+            max-width: 82%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .chat-bubble.bot {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .chat-bubble.user {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: white;
+            border-top: 1px solid var(--border);
+        }
+
+        .chat-input-row input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .chat-input-row button {
+            background: var(--primary);
+            color: white;
+            border: 0;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Footer */
+        footer.site-footer {
+            background: #093b2c;
+            color: #d1e8dc;
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 13px;
+        }
+
+        @media print {
+            header.site-header, .hero, nav.main-nav, .user-auth-box, .btn-primary, .btn-secondary, footer.site-footer, .no-print {
+                display: none !important;
+            }
+            body { background: white; color: black; }
+            .panel { border: 1px solid #ccc; box-shadow: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="nav-container">
+            <a href="#" class="brand" onclick="showView('explore'); return false;">
+                <div class="brand-icon">&#9992;</div>
+                <div class="brand-text">
+                    <h1>VoyAIge</h1>
+                    <span>Personalized India Tourism</span>
+                </div>
+            </a>
+
+            <nav class="main-nav">
+                <button class="nav-btn active" onclick="showView('explore')">Explore & Recommend</button>
+                <button class="nav-btn" onclick="showView('map')">Interactive Map</button>
+                <button class="nav-btn" onclick="showView('stays'); searchAccommodations()">Stay Planner</button>
+                <button class="nav-btn" onclick="showView('itinerary')">Itinerary Planner</button>
+                <button class="nav-btn" onclick="showView('saved')">Saved Places (<span id="navSavedCount">0</span>)</button>
+                <button class="nav-btn" onclick="showView('assistant')">AI Assistant</button>
+            </nav>
+
+            <div class="user-auth-box">
+                <div id="unauthArea">
+                    <button class="auth-btn" onclick="openAuthModal('login')">Login</button>
+                    <button class="auth-btn" onclick="openAuthModal('register')">Register</button>
+                </div>
+                <div id="authArea" style="display: none; align-items: center; gap: 8px;">
+                    <span id="userNameBadge" style="font-size: 13px; font-weight: bold;"></span>
+                    <button class="auth-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h2>Discover India Tailored to You</h2>
+        <p>AI-driven content recommendations powered by scikit-learn TF-IDF matching, personalized budgets, and verified tourism data.</p>
+    </section>
+
+    <!-- Main Views Container -->
+    <main class="container">
+
+        <!-- ============================================================== -->
+        <!-- VIEW 1: EXPLORE & RECOMMENDATIONS                              -->
+        <!-- ============================================================== -->
+        <section id="view-explore" class="view-section active">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Personalized Destination Planner</h3>
+                    <p>Specify your travel parameters. Our engine scores destinations by TF-IDF content similarity, budget, ratings, and time.</p>
+                </div>
+
+                <form id="recommendForm" onsubmit="handleRecommendSubmit(event)">
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="filterState">State</label>
+                            <select id="filterState">
+                                <option value="">All States in India</option>
+                                <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                                <option value="Assam">Assam</option>
+                                <option value="Bihar">Bihar</option>
+                                <option value="Chhattisgarh">Chhattisgarh</option>
+                                <option value="Daman and Diu">Daman and Diu</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Goa">Goa</option>
+                                <option value="Gujarat">Gujarat</option>
+                                <option value="Haryana">Haryana</option>
+                                <option value="Himachal Pradesh">Himachal Pradesh</option>
+                                <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                                <option value="Jharkhand">Jharkhand</option>
+                                <option value="Karnataka">Karnataka</option>
+                                <option value="Kerala">Kerala</option>
+                                <option value="Ladakh">Ladakh</option>
+                                <option value="Lakshadweep">Lakshadweep</option>
+                                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                <option value="Maharashtra">Maharashtra</option>
+                                <option value="Meghalaya">Meghalaya</option>
+                                <option value="Nagaland">Nagaland</option>
+                                <option value="Odisha">Odisha</option>
+                                <option value="Puducherry">Puducherry</option>
+                                <option value="Punjab">Punjab</option>
+                                <option value="Rajasthan">Rajasthan</option>
+                                <option value="Sikkim">Sikkim</option>
+                                <option value="Tamil Nadu">Tamil Nadu</option>
+                                <option value="Telangana">Telangana</option>
+                                <option value="Tripura">Tripura</option>
+                                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                <option value="Uttarakhand">Uttarakhand</option>
+                                <option value="West Bengal">West Bengal</option>
+                            </select>
+                            <span class="hint">Filter by specific Indian state</span>
+                        </div>
+
+                        <div class="field">
+                            <label for="filterType">Attraction Type</label>
+                            <select id="filterType">
+                                <option value="">All Attraction Types</option>
+                                <option value="Adventure Sport">Adventure Sport</option>
+                                <option value="Amusement Park">Amusement Park</option>
+                                <option value="Beach">Beach</option>
+                                <option value="Cave">Cave</option>
+                                <option value="Church">Church</option>
+                                <option value="Cultural">Cultural</option>
+                                <option value="Fort">Fort</option>
+                                <option value="Gurudwara">Gurudwara</option>
+                                <option value="Historical">Historical</option>
+                                <option value="Lake">Lake</option>
+                                <option value="Landmark">Landmark</option>
+                                <option value="Monument">Monument</option>
+                                <option value="Mosque">Mosque</option>
+                                <option value="Museum">Museum</option>
+                                <option value="National Park">National Park</option>
+                                <option value="Palace">Palace</option>
+                                <option value="Park">Park</option>
+                                <option value="Religious Site">Religious Site</option>
+                                <option value="Scenic Point">Scenic Point</option>
+                                <option value="Temple">Temple</option>
+                                <option value="Tomb">Tomb</option>
+                                <option value="Valley">Valley</option>
+                                <option value="Viewpoint">Viewpoint</option>
+                                <option value="Waterfall">Waterfall</option>
+                                <option value="Wildlife Sanctuary">Wildlife Sanctuary</option>
+                            </select>
+                            <span class="hint">E.g., Fort, Temple, Beach, Museum, Park</span>
+                        </div>
+
+                        <div class="field">
+                            <label for="filterInterests">Travel Interests (Content Similarity)</label>
+                            <input id="filterInterests" type="text" placeholder="e.g. historical, fort, peaceful, nature">
+                            <span class="hint">Keywords matched semantically via TF-IDF vectorizer</span>
+                        </div>
+
+                        <div class="field">
+                            <label for="filterBestTime">Preferred Visiting Period</label>
+                            <select id="filterBestTime">
+                                <option value="">Any Time of Day</option>
+                                <option value="Morning">Morning</option>
+                                <option value="Afternoon">Afternoon</option>
+                                <option value="Evening">Evening</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="filterBudget">Maximum Entrance Fee (INR)</label>
+                            <input id="filterBudget" type="number" min="0" max="10000" value="500" required>
+                            <span class="hint">Hard budget ceiling per destination</span>
+                        </div>
+
+                        <div class="field">
+                            <label for="filterHours">Available Visiting Hours</label>
+                            <select id="filterHours">
+                                <option value="2">Up to 2 hours</option>
+                                <option value="4">Up to 4 hours</option>
+                                <option value="6">Up to 6 hours</option>
+                                <option value="8" selected>Up to 8 hours</option>
+                                <option value="12">Full Day (12 hrs)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="recommendBtn" class="btn-primary">Compute AI Recommendations</button>
+                </form>
+
+                <div id="statusBox" class="status-box"></div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsWrapper" style="display: none;">
+                <div class="results-header">
+                    <div>
+                        <h3 style="font-size: 22px; color: var(--primary-dark);">Recommended Destinations</h3>
+                        <p style="font-size: 13px; color: var(--muted);" id="resultsMeta"></p>
+                    </div>
+                </div>
+
+                <div id="recommendationsGrid" class="cards-grid"></div>
+            </div>
+
+            <!-- Featured Destinations (Initial View) -->
+            <div id="featuredWrapper">
+                <div class="results-header">
+                    <div>
+                        <h3 style="font-size: 22px; color: var(--primary-dark);">Featured Indian Destinations</h3>
+                        <p style="font-size: 13px; color: var(--muted);">Popular top-rated tourist attractions from our verified dataset</p>
+                    </div>
+                </div>
+                <div id="featuredGrid" class="cards-grid"></div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 2: INTERACTIVE MAP                                        -->
+        <!-- ============================================================== -->
+        <section id="view-map" class="view-section">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Interactive Tourism Map</h3>
+                    <p>Explore destination locations across India. Click pins to see details, entrance fees, and directions.</p>
+                </div>
+                <div id="map-container"></div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 3: STAY PLANNER                                          -->
+        <!-- ============================================================== -->
+        <section id="view-stays" class="view-section">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Find a Place to Stay</h3>
+                    <p>Browse sourced hotels and suggested neighborhoods by city, stay area, and nightly budget. Rates are indicative; confirm with the property before booking.</p>
+                </div>
+
+                <form class="stay-filters" onsubmit="searchAccommodations(event)">
+                    <label class="field">
+                        <span>City</span>
+                        <select id="stayCityFilter" onchange="updateStayAreaOptions()">
+                            <option value="">All supported cities</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span>Stay area</span>
+                        <select id="stayAreaFilter">
+                            <option value="">All areas</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span>Accommodation type</span>
+                        <select id="stayTypeFilter">
+                            <option value="">All types</option>
+                            <option>Hotel</option>
+                            <option>Guest House</option>
+                            <option>Government Hotel</option>
+                            <option>Government Tourist Complex</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span>Price tier</span>
+                        <select id="stayTierFilter">
+                            <option value="">All price tiers</option>
+                            <option value="budget">🟢 Budget-friendly (≤ ₹1,500)</option>
+                            <option value="standard">Standard (₹1,500–₹4,000)</option>
+                            <option value="premium">Premium (&gt; ₹4,000)</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span>Max nightly tariff (₹)</span>
+                        <input id="stayBudgetFilter" type="number" min="0" placeholder="No limit">
+                    </label>
+                    <button type="submit" class="btn-primary stay-search-button">Search stays</button>
+                </form>
+
+                <div id="stayStatus" class="status-box"></div>
+
+                <div class="stay-area-section">
+                    <h4>Suggested areas</h4>
+                    <div id="stayAreasGrid" class="stay-areas-grid"></div>
+                </div>
+
+                <div class="stay-area-section">
+                    <h4>Accommodation listings</h4>
+                    <div id="accommodationsGrid" class="cards-grid"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 4: ITINERARY PLANNER                                      -->
+        <!-- ============================================================== -->
+        <section id="view-itinerary" class="view-section">
+            <div class="panel">
+                <div class="panel-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3>Multi-Day Itinerary Planner</h3>
+                        <p>Plan activities, budget-friendly stays, and food day by day with integrated cost breakdown and live budget warnings.</p>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn-secondary" style="padding: 7px 12px; font-size: 12px;" onclick="openSavedItinerariesModal()">📂 My Saved Trips</button>
+                        <button type="button" class="btn-secondary" style="padding: 7px 12px; font-size: 12px;" onclick="resetItineraryPlanner()">➕ New Trip</button>
+                        <button type="button" class="btn-secondary no-print" style="padding: 7px 12px; font-size: 12px;" onclick="window.print()">🖨️ Print / Export</button>
+                    </div>
+                </div>
+
+                <!-- Trip Parameters Bar -->
+                <div style="background: var(--light-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 18px;">
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex: 2; min-width: 220px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px;" for="itinTitle">Trip Title</label>
+                            <input id="itinTitle" type="text" placeholder="Trip Title (e.g., Delhi Heritage Weekend)" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: #fff;">
+                        </div>
+                        <div style="flex: 1; min-width: 100px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px;" for="itinTravelers">Travelers</label>
+                            <input id="itinTravelers" type="number" min="1" max="50" value="1" oninput="updateItineraryTravelers(this.value)" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: #fff;">
+                        </div>
+                        <div style="flex: 1; min-width: 140px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px;" for="itinBudget">Total Trip Budget (₹)</label>
+                            <input id="itinBudget" type="number" min="0" placeholder="e.g. 5000" value="3000" oninput="updateItineraryBudget(this.value)" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: #fff;">
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn-secondary" style="height: 42px;" onclick="addItineraryDay()">+ Add Day</button>
+                            <button type="button" id="saveItinBtn" class="btn-primary" style="height: 42px; margin-top: 0; min-width: 130px;" onclick="saveItineraryToBackend()">Save Trip</button>
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--muted);">
+                        💡 Trip Budget covers entrance fees, accommodation tariffs, and estimated food costs for all travelers across all trip days.
+                    </div>
+                </div>
+
+                <!-- Live Budget Warning Box -->
+                <div id="budgetWarningBox" class="budget-alert"></div>
+
+                <!-- Comprehensive Cost Breakdown Card -->
+                <div class="cost-breakdown-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 6px;">
+                        <h4 style="font-size: 14px; color: var(--primary-dark); margin: 0;">Trip Cost Breakdown</h4>
+                        <span id="breakdownSubtitle" style="font-size: 11px; color: var(--muted);">Indicative published tariffs and meal estimates</span>
+                    </div>
+                    <div class="cost-breakdown-grid">
+                        <div class="cost-item">
+                            <small>🎟️ Entrance Fees</small>
+                            <strong id="costEntranceFees">₹0</strong>
+                            <div id="costEntranceSub" style="font-size: 11px; color: var(--muted); margin-top: 2px;">0 activities</div>
+                        </div>
+                        <div class="cost-item">
+                            <small>🏨 Accommodation</small>
+                            <strong id="costAccommodation">₹0</strong>
+                            <div id="costAccommodationSub" style="font-size: 11px; color: var(--muted); margin-top: 2px;">No stay selected</div>
+                        </div>
+                        <div class="cost-item">
+                            <small>🍽️ Food & Meals</small>
+                            <strong id="costFood">₹0</strong>
+                            <div id="costFoodSub" style="font-size: 11px; color: var(--muted); margin-top: 2px;">Plan optional</div>
+                        </div>
+                        <div class="cost-item total-item">
+                            <small>💰 Total Estimated Cost</small>
+                            <strong id="costTotal">₹0</strong>
+                            <div id="costBudgetStatus" style="font-size: 11px; color: var(--muted); margin-top: 2px;">Budget: ₹3,000</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. ACCOMMODATION PLANNING PANEL -->
+                <div class="itin-subpanel">
+                    <div class="itin-subpanel-header">
+                        <h4><span>🏨</span> Accommodation & Stay</h4>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button type="button" class="btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="toggleStayPicker()">
+                                <span id="toggleStayBtnText">Browse Stays for Itinerary</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Selected Stay View -->
+                    <div id="itinAccommodationPanel" class="selected-stay-panel"></div>
+
+                    <!-- Stay Picker Drawer / Filter -->
+                    <div id="itinStayPicker" style="display: none; border-top: 1px dashed var(--border); padding-top: 14px; margin-top: 12px;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px;">
+                            <label style="font-size: 12px; font-weight: 600;">City:</label>
+                            <select id="itinStayCityFilter" onchange="loadItineraryStays(this.value)" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                                <option value="">All Supported Cities</option>
+                            </select>
+
+                            <div class="pill-group" style="margin: 0;">
+                                <button type="button" class="pill-btn active" id="itinStayTierAll" onclick="setItinStayTier('')">All Tiers</button>
+                                <button type="button" class="pill-btn budget-pill" id="itinStayTierBudget" onclick="setItinStayTier('budget')">🟢 Budget-Friendly (≤ ₹1,500)</button>
+                                <button type="button" class="pill-btn" id="itinStayTierStandard" onclick="setItinStayTier('standard')">Standard (₹1,500–₹4,000)</button>
+                                <button type="button" class="pill-btn" id="itinStayTierPremium" onclick="setItinStayTier('premium')">Premium (&gt; ₹4,000)</button>
+                            </div>
+                        </div>
+                        <div style="font-size: 11px; color: var(--muted); margin-bottom: 10px;">
+                            Tariffs are published indicative estimates. Stays are sourced from verified state tourism directories and property sites.
+                        </div>
+                        <div id="itinStaysGrid" class="cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); max-height: 420px; overflow-y: auto;">
+                            <p style="color: var(--muted);">Loading stays...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. FOOD PLANNING PANEL -->
+                <div class="itin-subpanel">
+                    <div class="itin-subpanel-header">
+                        <h4><span>🍽️</span> Food & Meals Planning</h4>
+                        <span style="font-size: 11px; color: var(--muted);">Optional · Estimates scaled by travelers & days</span>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <div class="pill-group">
+                            <button type="button" class="pill-btn budget-pill active" id="foodPresetBudget" onclick="selectFoodPreset('budget')">
+                                🟢 Budget-Friendly (₹350/person/day)
+                            </button>
+                            <button type="button" class="pill-btn" id="foodPresetStandard" onclick="selectFoodPreset('standard')">
+                                Standard Dining (₹750/person/day)
+                            </button>
+                            <button type="button" class="pill-btn" id="foodPresetPremium" onclick="selectFoodPreset('premium')">
+                                Premium Dining (₹1,600/person/day)
+                            </button>
+                            <button type="button" class="pill-btn" id="foodPresetCustom" onclick="toggleCustomFoodInput()">
+                                Custom Budget / Day
+                            </button>
+                            <button type="button" class="pill-btn" id="foodPresetEateries" onclick="toggleFoodEateriesPicker()">
+                                Pick Specific Eateries
+                            </button>
+                            <button type="button" class="pill-btn" id="foodPresetNone" onclick="selectFoodPreset('none')" style="color: var(--danger);">
+                                ✕ Skip Food Planning
+                            </button>
+                        </div>
+
+                        <!-- Custom Daily Budget input -->
+                        <div id="customFoodInputBox" style="display: none; margin-top: 10px; background: var(--light-bg); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border);">
+                            <label style="font-size: 12px; font-weight: 600; margin-right: 8px;" for="customFoodRate">Daily food budget per person (INR):</label>
+                            <input id="customFoodRate" type="number" min="0" value="400" oninput="updateCustomFoodRate(this.value)" style="width: 110px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;">
+                            <span style="font-size: 12px; color: var(--muted); margin-left: 8px;">Applied across all trip days and travelers.</span>
+                        </div>
+
+                        <!-- Active Food Plan Summary -->
+                        <div id="activeFoodSummary" style="margin-top: 10px; padding: 10px 14px; background: var(--accent-bg); border-radius: 8px; font-size: 13px; color: var(--primary-dark); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                            <span id="activeFoodSummaryText">Budget Food: ₹350/person/day × 1 traveler × 1 day = ₹350 total</span>
+                            <button type="button" onclick="selectFoodPreset('none')" style="background: none; border: 0; color: var(--danger); font-size: 12px; font-weight: 700; cursor: pointer;">Remove food</button>
+                        </div>
+
+                        <!-- Food Eateries Picker Drawer -->
+                        <div id="foodEateriesDrawer" style="display: none; border-top: 1px dashed var(--border); padding-top: 14px; margin-top: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <label style="font-size: 12px; font-weight: 600;">City:</label>
+                                    <select id="itinFoodCityFilter" onchange="loadItineraryFoodOptions(this.value)" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                                        <option value="">All Supported Cities</option>
+                                    </select>
+                                    <button type="button" class="pill-btn budget-pill" id="itinFoodBudgetFilterBtn" onclick="toggleItinFoodBudgetOnly()">🟢 Budget-friendly only</button>
+                                </div>
+                                <span style="font-size: 11px; color: var(--muted);">Indicative per-person meal costs from regional tourism guides</span>
+                            </div>
+                            <div id="itinFoodGrid" class="food-grid" style="max-height: 400px; overflow-y: auto;">
+                                <p style="color: var(--muted);">Loading food options...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. DAY-BY-DAY ACTIVITIES CONTAINER -->
+                <div id="itineraryDaysContainer"></div>
+
+                <!-- Footer Summary Bar -->
+                <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span style="font-weight: bold;">Estimated Trip Total (Entrance + Stay + Food): <span id="totalItinFees" style="color: var(--primary);">₹0</span></span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span id="itinStatusText" style="color: var(--muted); font-size: 13px;"></span>
+                        <button type="button" class="btn-primary" style="margin-top:0; width: auto;" onclick="saveItineraryToBackend()">Save Itinerary</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 5: SAVED DESTINATIONS                                     -->
+        <!-- ============================================================== -->
+        <section id="view-saved" class="view-section">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Your Saved Destinations</h3>
+                    <p>Places you've bookmarked to include in future itineraries.</p>
+                </div>
+                <div id="savedCardsGrid" class="cards-grid">
+                    <p style="color: var(--muted); padding: 20px;">You haven't saved any destinations yet. Click "Save" on any destination to keep it here.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 6: AI TRAVEL ASSISTANT                                    -->
+        <!-- ============================================================== -->
+        <section id="view-assistant" class="view-section">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>AI Travel Assistant</h3>
+                    <p>Ask questions about Indian tourist places, best visiting times, and entry fees with verified factual answers.</p>
+                </div>
+
+                <div class="chat-box">
+                    <div id="chatHistory" class="chat-history">
+                        <div class="chat-bubble bot">
+                            Hello! I am your AI Travel Assistant. Ask me anything about Indian tourist destinations, entry fees, or visiting hours (e.g. <em>"Tell me about Lotus Temple"</em> or <em>"Recommend historical forts in Rajasthan"</em>).
+                        </div>
+                    </div>
+                    <form class="chat-input-row" onsubmit="handleChatSubmit(event)">
+                        <input id="chatInput" type="text" placeholder="Ask about places, timings, fees, or cities...">
+                        <button type="submit">Ask</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Destination Details & Weather -->
+    <div id="detailsModal" class="modal-overlay" onclick="closeDetailsModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeDetailsModal()">&times;</button>
+            <span id="modalTypeTag" class="card-tag"></span>
+            <h3 id="modalName" style="color: var(--primary-dark); font-size: 24px; margin: 8px 0 4px;"></h3>
+            <p id="modalLocation" style="color: var(--muted); font-size: 14px; margin-bottom: 16px;"></p>
+
+            <div class="metrics-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 20px;">
+                <div class="metric"><small>Entrance Fee</small><strong id="modalFee"></strong></div>
+                <div class="metric"><small>Google Rating</small><strong id="modalRating"></strong></div>
+                <div class="metric"><small>Visit Duration</small><strong id="modalDuration"></strong></div>
+                <div class="metric"><small>Best Visiting Time</small><strong id="modalBestTime"></strong></div>
+                <div class="metric"><small>Significance</small><strong id="modalSignificance"></strong></div>
+                <div class="metric"><small>Weekly Off</small><strong id="modalWeeklyOff"></strong></div>
+                <div class="metric"><small>Establishment</small><strong id="modalEstYear"></strong></div>
+                <div class="metric"><small>Airport &lt; 50km</small><strong id="modalAirport"></strong></div>
+            </div>
+
+            <!-- Weather Box -->
+            <div id="modalWeatherBox" style="background: #eef6f1; padding: 12px 14px; border-radius: 8px; margin-bottom: 18px; font-size: 13px;">
+                <strong style="color: var(--primary-dark); display: block; margin-bottom: 4px;">Destination Climate & Weather</strong>
+                <span id="modalWeatherContent">Loading climate guidance...</span>
+            </div>
+
+            <button class="btn-secondary" style="width: 100%; margin-bottom: 12px;" onclick="findStaysForModalDestination()">Find stays in this city</button>
+
+            <div style="display: flex; gap: 10px;">
+                <a id="modalMapLink" href="#" target="_blank" class="btn-primary" style="text-align: center; text-decoration: none; flex: 1; margin-top: 0;">Open in Google Maps</a>
+                <button id="modalSaveBtn" class="btn-secondary" style="flex: 1;" onclick="saveCurrentModalPlace()">Save to My Places</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Authentication (Login / Register) -->
+    <div id="authModal" class="modal-overlay" onclick="closeAuthModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+            <h3 id="authModalTitle" style="color: var(--primary-dark); font-size: 22px; margin-bottom: 6px;">Sign In</h3>
+            <p id="authModalSubtitle" style="color: var(--muted); font-size: 13px; margin-bottom: 20px;">Access your saved trips and personalized itineraries.</p>
+
+            <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                <div id="fullNameField" class="field" style="margin-bottom: 14px; display: none;">
+                    <label for="authFullName">Full Name</label>
+                    <input id="authFullName" type="text" placeholder="e.g. Aarav Sharma">
+                </div>
+
+                <div class="field" style="margin-bottom: 14px;">
+                    <label for="authEmail">Email Address</label>
+                    <input id="authEmail" type="email" placeholder="name@example.com" required>
+                </div>
+
+                <div class="field" style="margin-bottom: 18px;">
+                    <label for="authPassword">Password</label>
+                    <input id="authPassword" type="password" placeholder="At least 6 characters" required minlength="6">
+                </div>
+
+                <button type="submit" id="authSubmitBtn" class="btn-primary" style="margin-top: 0;">Sign In</button>
+            </form>
+
+            <div id="authErrorMsg" style="color: var(--danger); font-size: 13px; margin-top: 12px; display: none;"></div>
+
+            <p style="text-align: center; font-size: 13px; color: var(--muted); margin-top: 18px;">
+                <span id="authToggleText">Don't have an account?</span>
+                <a href="#" id="authToggleLink" onclick="toggleAuthMode(); return false;" style="color: var(--primary); font-weight: bold;">Create one</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Modal: Saved Itineraries History & Editing -->
+    <div id="savedItinerariesModal" class="modal-overlay" onclick="closeSavedItinerariesModal(event)">
+        <div class="modal-box" style="max-width: 650px;" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeSavedItinerariesModal()">&times;</button>
+            <h3 style="color: var(--primary-dark); font-size: 22px; margin-bottom: 6px;">My Saved Trips</h3>
+            <p style="color: var(--muted); font-size: 13px; margin-bottom: 18px;">Load an existing itinerary to edit activities, stay, or food selections, or delete past trips.</p>
+            <div id="savedItinerariesList" style="max-height: 480px; overflow-y: auto;">
+                <p style="color: var(--muted); padding: 20px;">Loading your saved itineraries...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p><strong>VoyAIge</strong> — Advanced Personalized Tourism Recommendation System for India</p>
+        <p style="opacity: 0.8; margin-top: 6px;">Powered by FastAPI, scikit-learn TF-IDF Vectorization, SQLite & Leaflet.js</p>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        const API_BASE = (window.location.protocol.startsWith("http") && !window.location.port.includes("5500"))
+            ? window.location.origin
+            : "http://127.0.0.1:8000";
+        let authToken = localStorage.getItem("tourist_token") || null;
+        let currentUser = null;
+        let leafletMap = null;
+        let mapMarkers = [];
+        let allDestinationsCache = [];
+        let savedDestinationsList = [];
+        let stayAreasCache = [];
+        let accommodationCacheById = {};
+        let currentModalDestination = null;
+        let authMode = "login"; // 'login' or 'register'
+
+        // City coordinates dictionary for verified Indian cities
+        const CITY_COORDS = {
+            "delhi": [28.6139, 77.2090], "new delhi": [28.6139, 77.2090],
+            "mumbai": [19.0760, 72.8777], "agra": [27.1767, 78.0081],
+            "jaipur": [26.9124, 75.7873], "varanasi": [25.3176, 82.9739],
+            "amritsar": [31.6340, 74.8723], "kolkata": [22.5726, 88.3639],
+            "bengaluru": [12.9716, 77.5946], "bangalore": [12.9716, 77.5946],
+            "chennai": [13.0827, 80.2707], "hyderabad": [17.3850, 78.4867],
+            "kochi": [9.9312, 76.2673], "leh": [34.1526, 77.5771],
+            "srinagar": [34.0837, 74.7973], "shimla": [31.1048, 77.1734],
+            "manali": [32.2432, 77.1892], "rishikesh": [30.0869, 78.2676],
+            "haridwar": [29.9457, 78.1642], "udaipur": [24.5854, 73.7125],
+            "jodhpur": [26.2389, 73.0243], "mysore": [12.2958, 76.6394],
+            "alappuzha": [9.4981, 76.3388], "madurai": [9.9252, 78.1198],
+            "puducherry": [11.9416, 79.8083], "pondicherry": [11.9416, 79.8083],
+            "guwahati": [26.1445, 91.7362], "gangtok": [27.3389, 88.6065],
+            "darjeeling": [27.0410, 88.2663], "panaji": [15.4909, 73.8278],
+            "ahmedabad": [23.0225, 72.5714], "khajuraho": [24.8318, 79.9199],
+            "bhopal": [23.2599, 77.4126], "lucknow": [26.8467, 80.9462],
+            "patna": [25.5941, 85.1376], "bhubaneswar": [20.2961, 85.8245],
+            "puri": [19.8135, 85.8312], "hampi": [15.3350, 76.4600],
+            "ooty": [11.4102, 76.6950], "kodaikanal": [10.2381, 77.4892],
+            "rameswaram": [9.2876, 79.3129], "tirupati": [13.6288, 79.4192],
+            "agatti": [10.8534, 72.1944]
+        };
+
+        // Navigation view switcher
+        function showView(viewId) {
+            document.querySelectorAll(".view-section").forEach(sec => sec.classList.remove("active"));
+            document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
+
+            const targetSection = document.getElementById(`view-${viewId}`);
+            if (targetSection) targetSection.classList.add("active");
+
+            const activeBtn = Array.from(document.querySelectorAll(".nav-btn")).find(
+                btn => btn.textContent.toLowerCase().includes(viewId.substring(0, 4))
+            );
+            if (activeBtn) activeBtn.classList.add("active");
+
+            if (viewId === "map") {
+                initLeafletMap();
+                setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 200);
+            }
+            if (viewId === "saved") {
+                loadSavedDestinations();
+            }
+            if (viewId === "itinerary") {
+                renderItineraryPlanner();
+            }
+        }
+
+        // Initialize App on DOM load
+        document.addEventListener("DOMContentLoaded", async () => {
+            await checkAuth();
+            await populateFilterDropdowns();
+            await loadFeaturedDestinations();
+            await loadStayPlanner(true);
+            initItineraryStorage();
+        });
+
+        // Populate State and Attraction Type dropdowns
+        async function populateFilterDropdowns() {
+            const FALLBACK_STATES = [
+                "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar",
+                "Chhattisgarh", "Daman and Diu", "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh",
+                "Jammu and Kashmir", "Jharkhand", "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh",
+                "Maharashtra", "Meghalaya", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan",
+                "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
+            ];
+            const stateSelect = document.getElementById("filterState");
+            if (stateSelect && stateSelect.options.length <= 1) {
+                FALLBACK_STATES.forEach(st => {
+                    const opt = document.createElement("option");
+                    opt.value = st;
+                    opt.textContent = st;
+                    stateSelect.appendChild(opt);
+                });
+            }
+
+            try {
+                const [statesRes, typesRes] = await Promise.all([
+                    fetch(`${API_BASE}/states`),
+                    fetch(`${API_BASE}/destination-types`)
+                ]);
+                if (statesRes.ok) {
+                    const data = await statesRes.json();
+                    if (data.states && data.states.length > 0 && stateSelect) {
+                        const cur = stateSelect.value;
+                        stateSelect.innerHTML = `<option value="">All States in India</option>`;
+                        data.states.forEach(st => {
+                            const opt = document.createElement("option");
+                            opt.value = st;
+                            opt.textContent = st;
+                            stateSelect.appendChild(opt);
+                        });
+                        stateSelect.value = cur;
+                    }
+                }
+                if (typesRes.ok) {
+                    const data = await typesRes.json();
+                    const typeSelect = document.getElementById("filterType");
+                    if (data.types && data.types.length > 0 && typeSelect) {
+                        const curType = typeSelect.value;
+                        typeSelect.innerHTML = `<option value="">All Attraction Types</option>`;
+                        data.types.forEach(t => {
+                            const opt = document.createElement("option");
+                            opt.value = t;
+                            opt.textContent = t;
+                            typeSelect.appendChild(opt);
+                        });
+                        typeSelect.value = curType;
+                    }
+                }
+            } catch (err) {
+                console.warn("Backend not yet reached, fallback states active:", err);
+            }
+        }
+
+        async function loadStayPlanner(initialize = false) {
+            try {
+                if (initialize || stayAreasCache.length === 0) {
+                    const response = await fetch(`${API_BASE}/stay-areas`);
+                    if (!response.ok) throw new Error("Could not load stay areas");
+                    const data = await response.json();
+                    stayAreasCache = data.areas || [];
+
+                    const citySelect = document.getElementById("stayCityFilter");
+                    const cities = [...new Set(stayAreasCache.map(area => area.city))].sort();
+                    citySelect.innerHTML = `<option value="">All supported cities</option>`;
+                    cities.forEach(city => {
+                        const option = document.createElement("option");
+                        option.value = city;
+                        option.textContent = city;
+                        citySelect.appendChild(option);
+                    });
+                }
+                await updateStayAreaOptions(false);
+                await searchAccommodations();
+            } catch (err) {
+                const status = document.getElementById("stayStatus");
+                status.className = "status-box error active";
+                status.textContent = `Stay listings could not be loaded: ${err.message}`;
+            }
+        }
+
+        async function updateStayAreaOptions(searchAfterUpdate = true) {
+            const city = document.getElementById("stayCityFilter").value;
+            const areaSelect = document.getElementById("stayAreaFilter");
+            const areas = stayAreasCache.filter(area => !city || area.city === city);
+            areaSelect.innerHTML = `<option value="">All areas</option>`;
+            areas.forEach(area => {
+                const option = document.createElement("option");
+                option.value = area.id;
+                option.textContent = `${area.name} · ${area.city}`;
+                areaSelect.appendChild(option);
+            });
+            if (searchAfterUpdate) await searchAccommodations();
+        }
+
+        async function searchAccommodations(event) {
+            if (event) event.preventDefault();
+            const status = document.getElementById("stayStatus");
+            const areaGrid = document.getElementById("stayAreasGrid");
+            const stayGrid = document.getElementById("accommodationsGrid");
+            if (!areaGrid || !stayGrid) return;
+
+            status.className = "status-box loading active";
+            status.textContent = "Finding stay areas and accommodation listings...";
+            const city = document.getElementById("stayCityFilter").value;
+            const areaId = document.getElementById("stayAreaFilter").value;
+            const propertyType = document.getElementById("stayTypeFilter").value;
+            const tier = document.getElementById("stayTierFilter") ? document.getElementById("stayTierFilter").value : "";
+            const maxPrice = document.getElementById("stayBudgetFilter").value;
+            const params = new URLSearchParams();
+            if (city) params.set("city", city);
+            if (areaId) params.set("area_id", areaId);
+            if (propertyType) params.set("property_type", propertyType);
+            if (tier) params.set("price_tier", tier);
+            if (maxPrice !== "") params.set("max_price", maxPrice);
+
+            try {
+                const areaParams = new URLSearchParams();
+                if (city) areaParams.set("city", city);
+                const [areasResponse, staysResponse] = await Promise.all([
+                    fetch(`${API_BASE}/stay-areas?${areaParams.toString()}`),
+                    fetch(`${API_BASE}/accommodations?${params.toString()}`)
+                ]);
+                const areasData = await areasResponse.json();
+                const staysData = await staysResponse.json();
+                if (!areasResponse.ok) throw new Error(areasData.detail || "Could not load suggested areas");
+                if (!staysResponse.ok) throw new Error(staysData.detail || "Could not load accommodation listings");
+
+                const areas = (areasData.areas || []).filter(area => !areaId || area.id === Number(areaId));
+                areaGrid.innerHTML = areas.length ? areas.map(area => `
+                    <article class="stay-area-card">
+                        <div class="stay-area-meta">${escapeHtml(area.city)}, ${escapeHtml(area.state)} · ${escapeHtml(area.budget_category)}</div>
+                        <h5>${escapeHtml(area.name)}</h5>
+                        <p>${escapeHtml(area.description)}</p>
+                        ${area.nearby_attractions.length ? `<p><strong>Nearby sights:</strong> ${area.nearby_attractions.map(escapeHtml).join(", ")}</p>` : ""}
+                        ${area.source_url ? `<p><a href="${escapeHtml(area.source_url)}" target="_blank" rel="noopener">Area information source</a></p>` : ""}
+                    </article>
+                `).join("") : `<p style="color:var(--muted)">No stay-area suggestions for this filter.</p>`;
+
+                const stays = staysData.accommodations || [];
+                accommodationCacheById = Object.fromEntries(stays.map(stay => [stay.id, stay]));
+                stayGrid.innerHTML = stays.length ? stays.map(stay => {
+                    const price = stay.price_min_inr === null
+                        ? "Contact property for tariff"
+                        : stay.price_min_inr === stay.price_max_inr
+                            ? `₹${Number(stay.price_min_inr).toLocaleString("en-IN")} / night`
+                            : `₹${Number(stay.price_min_inr).toLocaleString("en-IN")}–₹${Number(stay.price_max_inr).toLocaleString("en-IN")} / night`;
+                    const amenities = stay.amenities.length
+                        ? `<p><strong>Amenities:</strong> ${stay.amenities.map(escapeHtml).join(" · ")}</p>`
+                        : "";
+                    const mapQuery = encodeURIComponent(`${stay.name} ${stay.address || stay.area} ${stay.city} ${stay.state}`);
+                    const propertyLink = stay.website_url || stay.source_url;
+                    const linkLabel = stay.website_url ? "Property website" : "Listing source";
+                    const tierClass = (stay.price_tier || "budget").toLowerCase();
+                    const budgetTag = stay.is_budget_friendly ? `<span class="tier-tag budget">🟢 Budget-Friendly</span>` : "";
+                    const tierTag = stay.price_tier ? `<span class="tier-tag ${tierClass}">${escapeHtml(stay.price_tier)}</span>` : "";
+                    return `
+                        <article class="stay-listing-card">
+                            <div>
+                                <div class="stay-area-meta">${escapeHtml(stay.property_type)} · ${escapeHtml(stay.city)} ${tierTag} ${budgetTag}</div>
+                                <h5>${escapeHtml(stay.name)}</h5>
+                                <p><strong>Area:</strong> ${escapeHtml(stay.area)}</p>
+                                ${stay.address ? `<p>${escapeHtml(stay.address)}</p>` : ""}
+                                <div class="stay-price">${price}</div>
+                                ${amenities}
+                                ${stay.price_note ? `<p class="stay-source-note">${escapeHtml(stay.price_note)}</p>` : ""}
+                            </div>
+                            <div class="stay-listing-actions">
+                                <a href="${escapeHtml(propertyLink)}" target="_blank" rel="noopener">${linkLabel}</a>
+                                <a href="https://www.google.com/maps/search/?api=1&query=${mapQuery}" target="_blank" rel="noopener">Open map</a>
+                                <button type="button" onclick="addStayToItineraryById(${stay.id})">Add to trip</button>
+                            </div>
+                        </article>
+                    `;
+                }).join("") : `<p style="color:var(--muted)">No listings match those filters. Try another city, area, or budget.</p>`;
+
+                status.className = "status-box success active";
+                status.textContent = `${areas.length} suggested areas and ${stays.length} accommodation listings found. Tariffs are not live booking prices.`;
+            } catch (err) {
+                status.className = "status-box error active";
+                status.textContent = `Could not search accommodations: ${err.message}`;
+            }
+        }
+
+        async function findStaysForModalDestination() {
+            if (!currentModalDestination) return;
+            const city = currentModalDestination.City || "";
+            const supportedCity = stayAreasCache.find(area => area.city.toLowerCase() === city.toLowerCase());
+            closeDetailsModal();
+            showView("stays");
+            if (!supportedCity) {
+                document.getElementById("stayCityFilter").value = "";
+                document.getElementById("stayAreasGrid").innerHTML = "";
+                document.getElementById("accommodationsGrid").innerHTML = "";
+                const status = document.getElementById("stayStatus");
+                status.className = "status-box error active";
+                status.textContent = `The starter stay catalog does not include ${city} yet. Browse the supported cities in the filter.`;
+                return;
+            }
+            document.getElementById("stayCityFilter").value = supportedCity.city;
+            await updateStayAreaOptions(false);
+            await searchAccommodations();
+        }
+
+        // Load Featured Destinations
+        async function loadFeaturedDestinations() {
+            try {
+                const res = await fetch(`${API_BASE}/destinations?page=1&page_size=6`);
+                if (res.ok) {
+                    const data = await res.json();
+                    allDestinationsCache = data.destinations || [];
+                    const grid = document.getElementById("featuredGrid");
+                    grid.innerHTML = "";
+                    data.destinations.forEach(place => {
+                        grid.appendChild(createDestinationCard(place, false));
+                    });
+                }
+            } catch (err) {
+                console.error("Featured destinations load failed:", err);
+            }
+        }
+
+        // Card component builder
+        function createDestinationCard(place, isRecommendation = true) {
+            const card = document.createElement("article");
+            card.className = "place-card";
+
+            const score = Number(place["Recommendation Score"] || place["Personalization Score"] || 0);
+            const scoreHtml = isRecommendation ? `
+                <div class="score-wrap">
+                    <div class="score-headline">
+                        <span>Personalization Score</span>
+                        <span class="score-val">${score.toFixed(1)}/100</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${Math.min(100, Math.max(0, score))}%;"></div>
+                    </div>
+                    ${place.Explanation ? `<div class="card-explanation">${escapeHtml(place.Explanation)}</div>` : ''}
+                </div>
+            ` : '';
+
+            card.innerHTML = `
+                <div>
+                    <div class="card-top">
+                        <span class="card-tag">${escapeHtml(place.Type || "Attraction")}</span>
+                        <span style="font-size: 13px; font-weight: bold; color: var(--primary);">&#9733; ${place["Google review rating"] || "4.5"}</span>
+                    </div>
+                    <h4>${escapeHtml(place.Name)}</h4>
+                    <p class="place-location">${escapeHtml(place.City)}, ${escapeHtml(place.State)}</p>
+                    ${scoreHtml}
+                    <div class="metrics-grid">
+                        <div class="metric"><small>Fee</small><strong>${place["Entrance Fee in INR"] === 0 ? "Free" : "₹" + place["Entrance Fee in INR"]}</strong></div>
+                        <div class="metric"><small>Duration</small><strong>${place["time needed to visit in hrs"]} hrs</strong></div>
+                        <div class="metric"><small>Best Time</small><strong>${escapeHtml(place["Best Time to visit"] || "All")}</strong></div>
+                        <div class="metric"><small>Off Day</small><strong>${escapeHtml(place["Weekly Off"] || "None")}</strong></div>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-view" onclick='openDetailsModal(${JSON.stringify(place).replace(/'/g, "&apos;")})'>Details & Weather</button>
+                    <button class="btn-save" onclick='saveDestinationAction(${place.id || place["id"]})'>+ Save</button>
+                </div>
+            `;
+            return card;
+        }
+
+        // Recommendation Form Submission
+        async function handleRecommendSubmit(event) {
+            event.preventDefault();
+            const statusBox = document.getElementById("statusBox");
+            const btn = document.getElementById("recommendBtn");
+            const resultsWrapper = document.getElementById("resultsWrapper");
+            const featuredWrapper = document.getElementById("featuredWrapper");
+            const grid = document.getElementById("recommendationsGrid");
+            const meta = document.getElementById("resultsMeta");
+
+            statusBox.className = "status-box loading active";
+            statusBox.textContent = "Calculating TF-IDF content similarities and ranking destinations...";
+            btn.disabled = true;
+
+            const state = document.getElementById("filterState").value;
+            const type = document.getElementById("filterType").value;
+            const interests = document.getElementById("filterInterests").value.trim();
+            const bestTime = document.getElementById("filterBestTime").value;
+            const budget = document.getElementById("filterBudget").value;
+            const hours = document.getElementById("filterHours").value;
+
+            const params = new URLSearchParams({
+                budget: budget,
+                available_hours: hours,
+                limit: "12"
+            });
+            if (state) params.set("state", state);
+            if (type) params.set("type", type);
+            if (interests) params.set("interests", interests);
+            if (bestTime) params.set("best_time", bestTime);
+
+            try {
+                const res = await fetch(`${API_BASE}/recommend?${params.toString()}`);
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || data.error || "Failed to load recommendations");
+
+                const places = data.recommendations || [];
+                if (places.length === 0) {
+                    statusBox.className = "status-box error active";
+                    statusBox.textContent = "No destinations matched your strict constraints. Try expanding your budget or visiting hours.";
+                    resultsWrapper.style.display = "none";
+                    featuredWrapper.style.display = "block";
+                    return;
+                }
+
+                grid.innerHTML = "";
+                places.forEach(p => grid.appendChild(createDestinationCard(p, true)));
+                meta.textContent = `${places.length} personalized recommendations found using TF-IDF and multi-factor scoring`;
+                resultsWrapper.style.display = "block";
+                featuredWrapper.style.display = "none";
+
+                statusBox.className = "status-box success active";
+                statusBox.textContent = `Successfully computed ${places.length} recommendations.`;
+
+                // Update map markers
+                updateMapMarkers(places);
+
+            } catch (err) {
+                statusBox.className = "status-box error active";
+                statusBox.textContent = `Error: ${err.message}. Make sure FastAPI backend is running on port 8000.`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // Details Modal & Weather Integration
+        async function openDetailsModal(place) {
+            currentModalDestination = place;
+            document.getElementById("modalTypeTag").textContent = place.Type || "Attraction";
+            document.getElementById("modalName").textContent = place.Name;
+            document.getElementById("modalLocation").textContent = `${place.City}, ${place.State} (${place.Zone || "India"})`;
+            document.getElementById("modalFee").textContent = place["Entrance Fee in INR"] === 0 ? "Free Entrance" : `₹${place["Entrance Fee in INR"]}`;
+            document.getElementById("modalRating").textContent = `${place["Google review rating"] || 4.5}/5`;
+            document.getElementById("modalDuration").textContent = `${place["time needed to visit in hrs"]} hours`;
+            document.getElementById("modalBestTime").textContent = place["Best Time to visit"] || "All seasons";
+            document.getElementById("modalSignificance").textContent = place.Significance || "Historical";
+            document.getElementById("modalWeeklyOff").textContent = place["Weekly Off"] || "Open every day";
+            document.getElementById("modalEstYear").textContent = place["Establishment Year"] || "Not specified";
+            document.getElementById("modalAirport").textContent = place["Airport with 50km Radius"] || "No";
+
+            const mapsQuery = encodeURIComponent(`${place.Name} ${place.City} ${place.State}`);
+            document.getElementById("modalMapLink").href = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
+            // Fetch live weather or dataset climate guidance
+            const weatherBox = document.getElementById("modalWeatherContent");
+            weatherBox.textContent = "Loading climate guidance...";
+            try {
+                const wRes = await fetch(`${API_BASE}/weather?city=${encodeURIComponent(place.City)}&state=${encodeURIComponent(place.State)}`);
+                if (wRes.ok) {
+                    const wData = await wRes.json();
+                    if (wData.is_live && wData.temp_c !== null) {
+                        weatherBox.innerHTML = `<strong>${wData.temp_c}°C</strong> - ${wData.condition}. Humidity: ${wData.humidity}%. Best Season: <strong>${wData.best_visiting_period}</strong>. <br><small style="color:var(--muted);">${wData.note}</small>`;
+                    } else {
+                        weatherBox.innerHTML = `Best visiting period: <strong>${wData.best_visiting_period}</strong>. <br><small style="color:var(--muted);">${wData.note}</small>`;
+                    }
+                }
+            } catch (err) {
+                weatherBox.textContent = `Best visiting time: ${place["Best Time to visit"] || "All year"}.`;
+            }
+
+            document.getElementById("detailsModal").classList.add("active");
+        }
+
+        function closeDetailsModal(event) {
+            document.getElementById("detailsModal").classList.remove("active");
+        }
+
+        // Leaflet Interactive Map
+        function initLeafletMap() {
+            if (leafletMap) return;
+            leafletMap = L.map('map-container').setView([22.5937, 78.9629], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(leafletMap);
+        }
+
+        function updateMapMarkers(places) {
+            if (!leafletMap) initLeafletMap();
+            mapMarkers.forEach(m => leafletMap.removeLayer(m));
+            mapMarkers = [];
+
+            const bounds = [];
+            places.forEach(p => {
+                const cityKey = (p.City || "").toLowerCase().trim();
+                let coords = CITY_COORDS[cityKey];
+                if (!coords) {
+                    // Slight deterministic jitter around central India if city coords unknown
+                    const hash = (p.Name || "").split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+                    coords = [20.0 + (hash % 80) * 0.1, 75.0 + (hash % 60) * 0.1];
+                }
+
+                const marker = L.marker(coords).addTo(leafletMap);
+                const feeText = p["Entrance Fee in INR"] === 0 ? "Free" : `₹${p["Entrance Fee in INR"]}`;
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.Name + " " + p.City)}`;
+                marker.bindPopup(`
+                    <div style="font-family: sans-serif; font-size: 13px;">
+                        <strong style="color: #126b50; font-size: 15px;">${escapeHtml(p.Name)}</strong><br>
+                        <span>${escapeHtml(p.City)}, ${escapeHtml(p.State)}</span><br>
+                        <span>Type: ${escapeHtml(p.Type)} | Fee: ${feeText}</span><br>
+                        <span>Rating: &#9733; ${p["Google review rating"]}</span><br>
+                        <a href="${mapsUrl}" target="_blank" style="color: #126b50; font-weight: bold; text-decoration: underline; margin-top: 6px; display: inline-block;">View Directions &rarr;</a>
+                    </div>
+                `);
+                mapMarkers.push(marker);
+                bounds.push(coords);
+            });
+
+            if (bounds.length > 0) {
+                leafletMap.fitBounds(bounds, { padding: [40, 40] });
+            }
+        }
+
+        // Authentication State & Handlers
+        async function checkAuth() {
+            if (!authToken) {
+                showUnauthenticated();
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/users/me`, {
+                    headers: { "Authorization": `Bearer ${authToken}` }
+                });
+                if (res.ok) {
+                    currentUser = await res.json();
+                    showAuthenticated(currentUser);
+                    loadSavedCount();
+                } else {
+                    logout();
+                }
+            } catch (err) {
+                console.warn("Auth check failed:", err);
+            }
+        }
+
+        function showAuthenticated(user) {
+            document.getElementById("unauthArea").style.display = "none";
+            const authArea = document.getElementById("authArea");
+            authArea.style.display = "flex";
+            document.getElementById("userNameBadge").textContent = `Hi, ${user.full_name}`;
+        }
+
+        function showUnauthenticated() {
+            document.getElementById("unauthArea").style.display = "block";
+            document.getElementById("authArea").style.display = "none";
+            currentUser = null;
+        }
+
+        function logout() {
+            localStorage.removeItem("tourist_token");
+            authToken = null;
+            currentUser = null;
+            showUnauthenticated();
+            document.getElementById("navSavedCount").textContent = "0";
+        }
+
+        function openAuthModal(mode = "login") {
+            authMode = mode;
+            updateAuthModalUI();
+            document.getElementById("authModal").classList.add("active");
+            document.getElementById("authErrorMsg").style.display = "none";
+        }
+
+        function closeAuthModal() {
+            document.getElementById("authModal").classList.remove("active");
+        }
+
+        function toggleAuthMode() {
+            authMode = (authMode === "login") ? "register" : "login";
+            updateAuthModalUI();
+        }
+
+        function updateAuthModalUI() {
+            const isReg = (authMode === "register");
+            document.getElementById("authModalTitle").textContent = isReg ? "Create Account" : "Sign In";
+            document.getElementById("authModalSubtitle").textContent = isReg ? "Sign up to create saved itineraries and access custom trips." : "Access your saved trips and personalized itineraries.";
+            document.getElementById("fullNameField").style.display = isReg ? "flex" : "none";
+            document.getElementById("authSubmitBtn").textContent = isReg ? "Create Account" : "Sign In";
+            document.getElementById("authToggleText").textContent = isReg ? "Already have an account?" : "Don't have an account?";
+            document.getElementById("authToggleLink").textContent = isReg ? "Sign in" : "Create one";
+            document.getElementById("authErrorMsg").style.display = "none";
+        }
+
+        async function handleAuthSubmit(event) {
+            event.preventDefault();
+            const email = document.getElementById("authEmail").value.trim();
+            const password = document.getElementById("authPassword").value;
+            const fullName = document.getElementById("authFullName").value.trim();
+            const errBox = document.getElementById("authErrorMsg");
+            errBox.style.display = "none";
+
+            const endpoint = authMode === "register" ? `${API_BASE}/auth/register` : `${API_BASE}/auth/login`;
+            const payload = authMode === "register" ? { email, password, full_name: fullName } : { email, password };
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Authentication failed");
+
+                authToken = data.access_token;
+                localStorage.setItem("tourist_token", authToken);
+                currentUser = data.user;
+                showAuthenticated(currentUser);
+                closeAuthModal();
+                loadSavedCount();
+            } catch (err) {
+                errBox.style.display = "block";
+                errBox.textContent = err.message;
+            }
+        }
+
+        // Saved Destinations Management
+        async function loadSavedCount() {
+            if (!authToken) return;
+            try {
+                const res = await fetch(`${API_BASE}/users/me/saved-destinations`, {
+                    headers: { "Authorization": `Bearer ${authToken}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById("navSavedCount").textContent = data.count || 0;
+                    savedDestinationsList = data.saved_destinations || [];
+                }
+            } catch (err) {
+                console.warn(err);
+            }
+        }
+
+        async function saveDestinationAction(destinationId) {
+            if (!authToken) {
+                openAuthModal("login");
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/users/me/saved-destinations`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ destination_id: destinationId })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Could not save destination");
+                alert("Destination bookmarked to your Saved Places!");
+                loadSavedCount();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function saveCurrentModalPlace() {
+            if (currentModalDestination) {
+                await saveDestinationAction(currentModalDestination.id);
+            }
+        }
+
+        async function loadSavedDestinations() {
+            if (!authToken) {
+                document.getElementById("savedCardsGrid").innerHTML = `
+                    <div style="grid-column: 1 / -1; padding: 30px; text-align: center;">
+                        <p style="color: var(--muted); margin-bottom: 12px;">Please log in to view your saved destinations.</p>
+                        <button class="btn-primary" style="width: auto; margin: auto;" onclick="openAuthModal('login')">Sign In</button>
+                    </div>
+                `;
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/users/me/saved-destinations`, {
+                    headers: { "Authorization": `Bearer ${authToken}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const grid = document.getElementById("savedCardsGrid");
+                    grid.innerHTML = "";
+                    const items = data.saved_destinations || [];
+                    if (items.length === 0) {
+                        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">You haven't saved any destinations yet.</p>`;
+                        return;
+                    }
+                    items.forEach(item => {
+                        const dest = item.destination;
+                        if (!dest) return;
+                        const card = document.createElement("article");
+                        card.className = "place-card";
+                        card.innerHTML = `
+                            <div>
+                                <span class="card-tag">${escapeHtml(dest.Type || "Attraction")}</span>
+                                <h4 style="margin-top: 8px;">${escapeHtml(dest.Name)}</h4>
+                                <p class="place-location">${escapeHtml(dest.City)}, ${escapeHtml(dest.State)}</p>
+                                <div class="metrics-grid">
+                                    <div class="metric"><small>Fee</small><strong>₹${dest["Entrance Fee in INR"]}</strong></div>
+                                    <div class="metric"><small>Rating</small><strong>&#9733; ${dest["Google review rating"]}</strong></div>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn-view" onclick='addToItineraryFromSaved(${JSON.stringify(dest).replace(/'/g, "&apos;")})'>+ Add to Trip</button>
+                                <button class="btn-save" style="color: var(--danger);" onclick="deleteSavedPlace(${dest.id})">Remove</button>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteSavedPlace(destinationId) {
+            try {
+                const res = await fetch(`${API_BASE}/users/me/saved-destinations/${destinationId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${authToken}` }
+                });
+                if (res.ok) {
+                    loadSavedCount();
+                    loadSavedDestinations();
+                }
+            } catch (err) {
+                alert("Could not remove place.");
+            }
+        }
+
+        // Itinerary Planner Engine
+        let itineraryPlan = {
+            id: null,
+            title: "My India Tour",
+            budget: 3000,
+            travelers_count: 1,
+            accommodation: null,
+            food: {
+                plan_mode: "daily_budget",
+                daily_budget_per_person: 350,
+                travelers_count: 1,
+                selected_option_ids: [],
+                notes: ""
+            },
+            days: [
+                { day: 1, activities: [] }
+            ]
+        };
+
+        let itinStayTierFilter = "";
+        let itinFoodBudgetOnly = false;
+        let foodOptionsCache = [];
+
+        function initItineraryStorage() {
+            const saved = localStorage.getItem("current_itin_plan");
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    itineraryPlan = Object.assign(itineraryPlan, parsed);
+                } catch(e){}
+            }
+            if (!itineraryPlan.travelers_count) itineraryPlan.travelers_count = 1;
+            if (!itineraryPlan.food) {
+                itineraryPlan.food = {
+                    plan_mode: "daily_budget",
+                    daily_budget_per_person: 350,
+                    travelers_count: itineraryPlan.travelers_count,
+                    selected_option_ids: [],
+                    notes: ""
+                };
+            }
+            renderItineraryPlanner();
+        }
+
+        function saveItinLocal() {
+            localStorage.setItem("current_itin_plan", JSON.stringify(itineraryPlan));
+        }
+
+        function resetItineraryPlanner() {
+            itineraryPlan = {
+                id: null,
+                title: "My India Tour",
+                budget: 3000,
+                travelers_count: 1,
+                accommodation: null,
+                food: {
+                    plan_mode: "daily_budget",
+                    daily_budget_per_person: 350,
+                    travelers_count: 1,
+                    selected_option_ids: [],
+                    notes: ""
+                },
+                days: [
+                    { day: 1, activities: [] }
+                ]
+            };
+            saveItinLocal();
+            renderItineraryPlanner();
+            document.getElementById("itinStatusText").textContent = "New blank itinerary started.";
+            setTimeout(() => { document.getElementById("itinStatusText").textContent = ""; }, 3000);
+        }
+
+        function addItineraryDay() {
+            itineraryPlan.days.push({
+                day: itineraryPlan.days.length + 1,
+                activities: []
+            });
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        function removeItineraryDay(dIdx) {
+            if (itineraryPlan.days.length <= 1) return;
+            itineraryPlan.days.splice(dIdx, 1);
+            itineraryPlan.days.forEach((d, idx) => { d.day = idx + 1; });
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        function addToItineraryFromSaved(place) {
+            if (itineraryPlan.days.length === 0) addItineraryDay();
+            const firstDay = itineraryPlan.days[0];
+            firstDay.activities.push({
+                destination_id: place.id,
+                name: place.Name,
+                city: place.City,
+                time_slot: "Morning",
+                fee: place["Entrance Fee in INR"] || 0
+            });
+            saveItinLocal();
+            showView('itinerary');
+            renderItineraryPlanner();
+        }
+
+        function updateItineraryTravelers(value) {
+            const count = Math.max(1, Math.min(50, Number(value) || 1));
+            itineraryPlan.travelers_count = count;
+            if (itineraryPlan.food) {
+                itineraryPlan.food.travelers_count = count;
+            }
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        function updateItineraryBudget(value) {
+            itineraryPlan.budget = Number(value) || 0;
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        // ==============================================================
+        // Accommodation Planning Functions inside Itinerary
+        // ==============================================================
+        function addStayToItineraryById(accommodationId) {
+            const stay = accommodationCacheById[accommodationId];
+            if (stay) addStayToItinerary(stay);
+        }
+
+        function addStayToItinerary(stay) {
+            itineraryPlan.accommodation = {
+                accommodation_id: stay.id,
+                name: stay.name,
+                property_type: stay.property_type,
+                city: stay.city,
+                area: stay.area,
+                price_min_inr: stay.price_min_inr,
+                price_max_inr: stay.price_max_inr,
+                price_tier: stay.price_tier,
+                is_budget_friendly: stay.is_budget_friendly,
+                website_url: stay.website_url,
+                source_url: stay.source_url,
+                price_note: stay.price_note,
+                nights: (itineraryPlan.accommodation && itineraryPlan.accommodation.nights) ? itineraryPlan.accommodation.nights : 1
+            };
+            saveItinLocal();
+            const drawer = document.getElementById("itinStayPicker");
+            if (drawer) drawer.style.display = "none";
+            showView("itinerary");
+            renderItineraryPlanner();
+        }
+
+        function updateItineraryStayNights(value) {
+            if (!itineraryPlan.accommodation) return;
+            itineraryPlan.accommodation.nights = Math.min(60, Math.max(1, Number(value) || 1));
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        function clearItineraryStay() {
+            itineraryPlan.accommodation = null;
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        function getItineraryCities() {
+            const cities = new Set();
+            (itineraryPlan.days || []).forEach(d => {
+                (d.activities || []).forEach(act => {
+                    if (act.city) cities.add(act.city);
+                    else if (act.destination_id) {
+                        const cached = (allDestinationsCache || []).find(x => x.id === act.destination_id);
+                        if (cached && cached.City) cities.add(cached.City);
+                    }
+                });
+            });
+            return Array.from(cities);
+        }
+
+        async function toggleStayPicker() {
+            const drawer = document.getElementById("itinStayPicker");
+            const btnText = document.getElementById("toggleStayBtnText");
+            if (!drawer) return;
+            if (drawer.style.display === "none" || !drawer.style.display) {
+                drawer.style.display = "block";
+                btnText.textContent = "Hide Stay Browser";
+                populateItinStayCities();
+                await loadItineraryStays();
+            } else {
+                drawer.style.display = "none";
+                btnText.textContent = "Browse Stays for Itinerary";
+            }
+        }
+
+        function populateItinStayCities() {
+            const select = document.getElementById("itinStayCityFilter");
+            if (!select) return;
+            const itinCities = getItineraryCities();
+            const allCities = [...new Set((stayAreasCache || []).map(a => a.city))].sort();
+
+            select.innerHTML = `<option value="">All Supported Cities</option>`;
+            if (itinCities.length > 0) {
+                const group = document.createElement("optgroup");
+                group.label = "Cities in your itinerary";
+                itinCities.forEach(c => {
+                    const opt = document.createElement("option");
+                    opt.value = c;
+                    opt.textContent = `★ ${c}`;
+                    group.appendChild(opt);
+                });
+                select.appendChild(group);
+            }
+
+            const allGroup = document.createElement("optgroup");
+            allGroup.label = "All destinations";
+            allCities.forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c;
+                opt.textContent = c;
+                allGroup.appendChild(opt);
+            });
+            select.appendChild(allGroup);
+
+            if (itinCities.length > 0) {
+                select.value = itinCities[0];
+            }
+        }
+
+        function setItinStayTier(tier) {
+            itinStayTierFilter = tier;
+            document.querySelectorAll("#itinStayPicker .pill-btn").forEach(btn => btn.classList.remove("active"));
+            if (!tier) document.getElementById("itinStayTierAll").classList.add("active");
+            else if (tier === "budget") document.getElementById("itinStayTierBudget").classList.add("active");
+            else if (tier === "standard") document.getElementById("itinStayTierStandard").classList.add("active");
+            else if (tier === "premium") document.getElementById("itinStayTierPremium").classList.add("active");
+
+            const city = document.getElementById("itinStayCityFilter").value;
+            loadItineraryStays(city);
+        }
+
+        async function loadItineraryStays(city) {
+            const grid = document.getElementById("itinStaysGrid");
+            if (!grid) return;
+            grid.innerHTML = `<p style="color:var(--muted); padding:10px;">Finding relevant stays...</p>`;
+
+            const params = new URLSearchParams();
+            if (city) params.set("city", city);
+            else {
+                const itinCities = getItineraryCities();
+                if (itinCities.length === 1) params.set("city", itinCities[0]);
+            }
+            if (itinStayTierFilter) params.set("price_tier", itinStayTierFilter);
+
+            try {
+                const res = await fetch(`${API_BASE}/accommodations?${params.toString()}`);
+                if (!res.ok) throw new Error("Could not load accommodations");
+                const data = await res.json();
+                const stays = data.accommodations || [];
+                stays.forEach(s => { accommodationCacheById[s.id] = s; });
+
+                if (stays.length === 0) {
+                    grid.innerHTML = `<p style="color:var(--muted); padding:10px;">No stays found matching this filter. Try selecting 'All Supported Cities' or 'All Tiers'.</p>`;
+                    return;
+                }
+
+                grid.innerHTML = stays.map(stay => {
+                    const price = stay.price_min_inr === null
+                        ? "Contact property for tariff"
+                        : stay.price_min_inr === stay.price_max_inr
+                            ? `₹${Number(stay.price_min_inr).toLocaleString("en-IN")} / night`
+                            : `₹${Number(stay.price_min_inr).toLocaleString("en-IN")}–₹${Number(stay.price_max_inr).toLocaleString("en-IN")} / night`;
+                    const tierClass = (stay.price_tier || "budget").toLowerCase();
+                    const budgetTag = stay.is_budget_friendly ? `<span class="tier-tag budget">🟢 Budget-Friendly</span>` : "";
+                    const tierTag = stay.price_tier ? `<span class="tier-tag ${tierClass}">${escapeHtml(stay.price_tier)}</span>` : "";
+                    const propertyLink = stay.website_url || stay.source_url;
+                    const linkLabel = stay.website_url ? "Property site" : "Source listing";
+                    const isSelected = itineraryPlan.accommodation && itineraryPlan.accommodation.accommodation_id === stay.id;
+
+                    return `
+                        <article class="stay-listing-card" style="min-height: auto;">
+                            <div>
+                                <div class="stay-area-meta">${escapeHtml(stay.property_type)} · ${escapeHtml(stay.city)} ${tierTag} ${budgetTag}</div>
+                                <h5 style="margin-top: 4px;">${escapeHtml(stay.name)}</h5>
+                                <p style="font-size: 12px; margin: 2px 0;"><strong>Area:</strong> ${escapeHtml(stay.area)} ${stay.address ? `· ${escapeHtml(stay.address)}` : ""}</p>
+                                <div class="stay-price" style="font-size: 15px;">${price}</div>
+                                ${stay.amenities && stay.amenities.length ? `<p style="font-size: 11px;"><strong>Amenities:</strong> ${stay.amenities.slice(0, 3).map(escapeHtml).join(" · ")}</p>` : ""}
+                                ${stay.price_note ? `<p class="stay-source-note">${escapeHtml(stay.price_note)}</p>` : ""}
+                            </div>
+                            <div class="stay-listing-actions" style="margin-top: 10px;">
+                                <a href="${escapeHtml(propertyLink)}" target="_blank" rel="noopener">${linkLabel}</a>
+                                <button type="button" onclick="addStayToItineraryById(${stay.id})" style="${isSelected ? 'background: #027a48; border-color: #027a48;' : ''}">
+                                    ${isSelected ? "Selected ✓" : "Choose Stay"}
+                                </button>
+                            </div>
+                        </article>
+                    `;
+                }).join("");
+            } catch(e) {
+                grid.innerHTML = `<p style="color:var(--danger); padding:10px;">Failed to load stays: ${e.message}</p>`;
+            }
+        }
+
+        // ==============================================================
+        // Food Planning Functions inside Itinerary
+        // ==============================================================
+        function selectFoodPreset(presetId) {
+            if (!itineraryPlan.food) itineraryPlan.food = {};
+            itineraryPlan.food.travelers_count = itineraryPlan.travelers_count || 1;
+
+            const customBox = document.getElementById("customFoodInputBox");
+            if (customBox) customBox.style.display = "none";
+            const drawer = document.getElementById("foodEateriesDrawer");
+            if (drawer) drawer.style.display = "none";
+
+            if (presetId === "budget") {
+                itineraryPlan.food.plan_mode = "daily_budget";
+                itineraryPlan.food.daily_budget_per_person = 350;
+                itineraryPlan.food.selected_option_ids = [];
+            } else if (presetId === "standard") {
+                itineraryPlan.food.plan_mode = "daily_budget";
+                itineraryPlan.food.daily_budget_per_person = 750;
+                itineraryPlan.food.selected_option_ids = [];
+            } else if (presetId === "premium") {
+                itineraryPlan.food.plan_mode = "daily_budget";
+                itineraryPlan.food.daily_budget_per_person = 1600;
+                itineraryPlan.food.selected_option_ids = [];
+            } else if (presetId === "none") {
+                itineraryPlan.food.plan_mode = "none";
+                itineraryPlan.food.daily_budget_per_person = 0;
+                itineraryPlan.food.selected_option_ids = [];
+            }
+
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        function toggleCustomFoodInput() {
+            const box = document.getElementById("customFoodInputBox");
+            const drawer = document.getElementById("foodEateriesDrawer");
+            if (drawer) drawer.style.display = "none";
+            if (!box) return;
+            box.style.display = "block";
+            const rate = Number(document.getElementById("customFoodRate").value) || 400;
+            itineraryPlan.food.plan_mode = "custom_daily";
+            itineraryPlan.food.daily_budget_per_person = rate;
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        function updateCustomFoodRate(rate) {
+            itineraryPlan.food.plan_mode = "custom_daily";
+            itineraryPlan.food.daily_budget_per_person = Math.max(0, Number(rate) || 0);
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        async function toggleFoodEateriesPicker() {
+            const drawer = document.getElementById("foodEateriesDrawer");
+            const customBox = document.getElementById("customFoodInputBox");
+            if (customBox) customBox.style.display = "none";
+            if (!drawer) return;
+            if (drawer.style.display === "none" || !drawer.style.display) {
+                drawer.style.display = "block";
+                itineraryPlan.food.plan_mode = "selected_options";
+                populateItinFoodCities();
+                await loadItineraryFoodOptions();
+            } else {
+                drawer.style.display = "none";
+            }
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        function populateItinFoodCities() {
+            const select = document.getElementById("itinFoodCityFilter");
+            if (!select) return;
+            const itinCities = getItineraryCities();
+            select.innerHTML = `<option value="">All Supported Cities</option>`;
+            if (itinCities.length > 0) {
+                const group = document.createElement("optgroup");
+                group.label = "Cities in your itinerary";
+                itinCities.forEach(c => {
+                    const opt = document.createElement("option");
+                    opt.value = c;
+                    opt.textContent = `★ ${c}`;
+                    group.appendChild(opt);
+                });
+                select.appendChild(group);
+            }
+            const standardCities = ["Delhi", "Agra", "Jaipur", "Varanasi", "Goa", "Mumbai", "Bangalore", "Amritsar", "Kolkata", "Hyderabad"];
+            const otherGroup = document.createElement("optgroup");
+            otherGroup.label = "All destinations";
+            standardCities.forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c;
+                opt.textContent = c;
+                otherGroup.appendChild(opt);
+            });
+            select.appendChild(otherGroup);
+
+            if (itinCities.length > 0) {
+                select.value = itinCities[0];
+            }
+        }
+
+        function toggleItinFoodBudgetOnly() {
+            itinFoodBudgetOnly = !itinFoodBudgetOnly;
+            const btn = document.getElementById("itinFoodBudgetFilterBtn");
+            if (btn) {
+                btn.className = itinFoodBudgetOnly ? "pill-btn budget-pill active" : "pill-btn budget-pill";
+            }
+            const city = document.getElementById("itinFoodCityFilter").value;
+            loadItineraryFoodOptions(city);
+        }
+
+        async function loadItineraryFoodOptions(city) {
+            const grid = document.getElementById("itinFoodGrid");
+            if (!grid) return;
+            grid.innerHTML = `<p style="color:var(--muted); padding:10px;">Finding curated food options...</p>`;
+
+            const params = new URLSearchParams();
+            if (city) params.set("city", city);
+            else {
+                const itinCities = getItineraryCities();
+                if (itinCities.length === 1) params.set("city", itinCities[0]);
+            }
+            if (itinFoodBudgetOnly) params.set("budget_friendly", "true");
+
+            try {
+                const res = await fetch(`${API_BASE}/food-options?${params.toString()}`);
+                if (!res.ok) throw new Error("Could not load food options");
+                const data = await res.json();
+                const foods = data.food_options || [];
+                foodOptionsCache = foods;
+
+                if (foods.length === 0) {
+                    grid.innerHTML = `<p style="color:var(--muted); padding:10px;">No eateries found matching this filter. Try selecting 'All Supported Cities' or toggling off budget-only.</p>`;
+                    return;
+                }
+
+                grid.innerHTML = foods.map(food => {
+                    const isSelected = (itineraryPlan.food.selected_option_ids || []).includes(food.id);
+                    const tierClass = food.price_tier.toLowerCase();
+                    const budgetTag = food.is_budget_friendly ? `<span class="tier-tag budget">🟢 Budget-Friendly</span>` : "";
+                    const tierTag = `<span class="tier-tag ${tierClass}">${escapeHtml(food.price_tier)}</span>`;
+                    return `
+                        <article class="food-card">
+                            <div>
+                                <div class="stay-area-meta">${escapeHtml(food.cuisine || "Indian")} · ${escapeHtml(food.city)} ${tierTag} ${budgetTag}</div>
+                                <h5>${escapeHtml(food.name)}</h5>
+                                <p><strong>Area:</strong> ${escapeHtml(food.area || food.city)} · ${escapeHtml(food.meal_type || "Meals")}</p>
+                                <p style="font-size: 11px;">${escapeHtml(food.description || "")}</p>
+                                <div class="food-price">~₹${Number(food.estimated_cost_inr).toLocaleString("en-IN")} / person</div>
+                                ${food.source_url ? `<p style="font-size: 11px; margin-top: 4px;"><a href="${escapeHtml(food.source_url)}" target="_blank" rel="noopener">Culinary guide listing</a></p>` : ""}
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <button type="button" class="btn-secondary" style="width: 100%; font-size: 11px; padding: 6px; ${isSelected ? 'background: #027a48; color: #fff; border-color: #027a48;' : ''}" onclick="toggleFoodOptionSelection(${food.id})">
+                                    ${isSelected ? "Added to Plan ✓" : "+ Add to Trip Plan"}
+                                </button>
+                            </div>
+                        </article>
+                    `;
+                }).join("");
+            } catch(e) {
+                grid.innerHTML = `<p style="color:var(--danger); padding:10px;">Failed to load food options: ${e.message}</p>`;
+            }
+        }
+
+        function toggleFoodOptionSelection(foodId) {
+            if (!itineraryPlan.food) itineraryPlan.food = { plan_mode: "selected_options", selected_option_ids: [] };
+            if (!Array.isArray(itineraryPlan.food.selected_option_ids)) itineraryPlan.food.selected_option_ids = [];
+            itineraryPlan.food.plan_mode = "selected_options";
+
+            const idx = itineraryPlan.food.selected_option_ids.indexOf(foodId);
+            if (idx >= 0) {
+                itineraryPlan.food.selected_option_ids.splice(idx, 1);
+            } else {
+                itineraryPlan.food.selected_option_ids.push(foodId);
+            }
+            saveItinLocal();
+            renderItineraryPlanner();
+            const city = document.getElementById("itinFoodCityFilter") ? document.getElementById("itinFoodCityFilter").value : "";
+            loadItineraryFoodOptions(city);
+        }
+
+        // ==============================================================
+        // Core Itinerary Render & Budget Warning Calculation
+        // ==============================================================
+        function renderItineraryPlanner() {
+            const container = document.getElementById("itineraryDaysContainer");
+            const warningBox = document.getElementById("budgetWarningBox");
+            if (!container) return;
+            container.innerHTML = "";
+
+            if (!Array.isArray(itineraryPlan.days)) itineraryPlan.days = [{ day: 1, activities: [] }];
+            if (!itineraryPlan.travelers_count) itineraryPlan.travelers_count = 1;
+
+            // Sync top bar inputs
+            const titleInput = document.getElementById("itinTitle");
+            if (titleInput && titleInput.value !== itineraryPlan.title) {
+                titleInput.value = itineraryPlan.title || "";
+            }
+            const travelersInput = document.getElementById("itinTravelers");
+            if (travelersInput) {
+                travelersInput.value = itineraryPlan.travelers_count;
+            }
+            const budgetInput = document.getElementById("itinBudget");
+            if (budgetInput && document.activeElement !== budgetInput) {
+                budgetInput.value = itineraryPlan.budget !== undefined ? itineraryPlan.budget : 3000;
+            }
+            const saveBtn = document.getElementById("saveItinBtn");
+            if (saveBtn) {
+                saveBtn.textContent = itineraryPlan.id ? "Update Saved Trip" : "Save Trip";
+            }
+
+            let totalFees = 0;
+            let totalActivitiesCount = 0;
+
+            itineraryPlan.days.forEach((d, dIdx) => {
+                const dayBox = document.createElement("div");
+                dayBox.className = "day-box";
+
+                let activitiesHtml = "";
+                if (!d.activities || d.activities.length === 0) {
+                    activitiesHtml = `<li style="color: var(--muted); font-size: 13px;">No destinations added yet for Day ${d.day}. Add stops below, from Explore, or from Saved Places.</li>`;
+                } else {
+                    d.activities.forEach((act, aIdx) => {
+                        totalActivitiesCount++;
+                        totalFees += Number(act.fee || 0);
+                        activitiesHtml += `
+                            <li class="activity-item">
+                                <div>
+                                    <span class="activity-time">${escapeHtml(act.time_slot || "Morning")}:</span>
+                                    <strong>${escapeHtml(act.name)}</strong>
+                                    ${act.city ? `<span style="color: var(--muted); font-size: 11px;">(${escapeHtml(act.city)})</span>` : ""}
+                                    <span style="color: var(--muted); margin-left: 6px;">(Entrance: ₹${act.fee || 0})</span>
+                                </div>
+                                <button onclick="removeActivity(${dIdx}, ${aIdx})" style="background: none; border: 0; color: var(--danger); cursor: pointer; font-weight: bold; font-size: 16px;">&times;</button>
+                            </li>
+                        `;
+                    });
+                }
+
+                dayBox.innerHTML = `
+                    <div class="day-header">
+                        <h4>Day ${d.day}</h4>
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" class="btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="addCustomPlaceToDay(${dIdx})">+ Add Stop</button>
+                            ${itineraryPlan.days.length > 1 ? `<button type="button" class="btn-secondary" style="padding: 4px 8px; font-size: 11px; color: var(--danger);" onclick="removeItineraryDay(${dIdx})">Remove Day</button>` : ""}
+                        </div>
+                    </div>
+                    <ul class="day-activities-list">
+                        ${activitiesHtml}
+                    </ul>
+                `;
+                container.appendChild(dayBox);
+            });
+
+            // Accommodation Calculation
+            const stayPanel = document.getElementById("itinAccommodationPanel");
+            const stay = itineraryPlan.accommodation;
+            let stayMinTotal = null;
+            let stayMaxTotal = null;
+            const daysCount = Math.max(1, itineraryPlan.days.length);
+            const travelersCount = Math.max(1, itineraryPlan.travelers_count || 1);
+
+            if (stay) {
+                const nights = Math.max(1, Number(stay.nights) || 1);
+                stay.nights = nights;
+                if (stay.price_min_inr !== null && stay.price_min_inr !== undefined) {
+                    stayMinTotal = Number(stay.price_min_inr) * nights;
+                }
+                if (stay.price_max_inr !== null && stay.price_max_inr !== undefined) {
+                    stayMaxTotal = Number(stay.price_max_inr) * nights;
+                }
+                const nightlyText = stay.price_min_inr === null || stay.price_min_inr === undefined
+                    ? "Current tariff unlisted"
+                    : stay.price_min_inr === stay.price_max_inr
+                        ? `₹${Number(stay.price_min_inr).toLocaleString("en-IN")} / night`
+                        : `₹${Number(stay.price_min_inr).toLocaleString("en-IN")}–₹${Number(stay.price_max_inr).toLocaleString("en-IN")} / night`;
+                const stayEstimate = stayMinTotal === null
+                    ? "Contact property directly for tariff confirmation."
+                    : stayMinTotal === stayMaxTotal
+                        ? `Estimated stay total: ₹${stayMinTotal.toLocaleString("en-IN")}`
+                        : `Estimated stay total: ₹${stayMinTotal.toLocaleString("en-IN")}–₹${Number(stayMaxTotal).toLocaleString("en-IN")}`;
+
+                const tierClass = (stay.price_tier || "budget").toLowerCase();
+                const budgetTag = stay.is_budget_friendly ? `<span class="tier-tag budget">🟢 Budget-Friendly</span>` : "";
+                const tierTag = stay.price_tier ? `<span class="tier-tag ${tierClass}">${escapeHtml(stay.price_tier)}</span>` : "";
+
+                stayPanel.className = "selected-stay-panel active";
+                stayPanel.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
+                        <div>
+                            <strong>Selected Stay: ${escapeHtml(stay.name)}</strong> ${tierTag} ${budgetTag}
+                            <p style="margin: 3px 0;">${escapeHtml(stay.area || "")}, ${escapeHtml(stay.city || "")} · ${nightlyText}</p>
+                            <p style="font-weight: 600; color: var(--primary); margin: 3px 0;">${stayEstimate}</p>
+                            ${stay.price_note ? `<p class="stay-source-note">${escapeHtml(stay.price_note)}</p>` : ""}
+                        </div>
+                    </div>
+                    <div class="selected-stay-controls" style="margin-top: 10px;">
+                        <label for="itinStayNights" style="font-size: 12px; font-weight: 600;">Nights:</label>
+                        <input id="itinStayNights" type="number" min="1" max="60" value="${nights}" onchange="updateItineraryStayNights(this.value)">
+                        <button type="button" class="btn-secondary" style="padding: 4px 10px; font-size: 12px; border: 1px solid var(--border);" onclick="toggleStayPicker()">Choose another stay</button>
+                        <button type="button" style="color: var(--danger); font-size: 12px;" onclick="clearItineraryStay()">Remove stay</button>
+                    </div>
+                `;
+            } else {
+                stayPanel.className = "selected-stay-panel active";
+                stayPanel.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <span style="color: var(--muted); font-size: 13px;">No accommodation chosen yet. Add a budget-friendly hotel or guest house for the trip.</span>
+                        <button type="button" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="toggleStayPicker()">Find a Stay</button>
+                    </div>
+                `;
+            }
+
+            // Food Calculation
+            let foodCost = 0;
+            let foodExplanation = "Food planning skipped (₹0)";
+            const food = itineraryPlan.food || { plan_mode: "none" };
+
+            // Sync preset active pill states
+            ["Budget", "Standard", "Premium", "None", "Custom", "Eateries"].forEach(p => {
+                const el = document.getElementById(`foodPreset${p}`);
+                if (el) el.classList.remove("active");
+            });
+
+            if (food.plan_mode === "daily_budget") {
+                const rate = food.daily_budget_per_person || 350;
+                foodCost = Math.round(rate * travelersCount * daysCount);
+                foodExplanation = `₹${rate.toLocaleString("en-IN")}/person/day × ${travelersCount} traveler(s) × ${daysCount} day(s) = ₹${foodCost.toLocaleString("en-IN")}`;
+                if (rate <= 400 && document.getElementById("foodPresetBudget")) {
+                    document.getElementById("foodPresetBudget").classList.add("active");
+                } else if (rate <= 800 && document.getElementById("foodPresetStandard")) {
+                    document.getElementById("foodPresetStandard").classList.add("active");
+                } else if (document.getElementById("foodPresetPremium")) {
+                    document.getElementById("foodPresetPremium").classList.add("active");
+                }
+            } else if (food.plan_mode === "custom_daily") {
+                const rate = food.daily_budget_per_person || 0;
+                foodCost = Math.round(rate * travelersCount * daysCount);
+                foodExplanation = `Custom ₹${rate.toLocaleString("en-IN")}/person/day × ${travelersCount} traveler(s) × ${daysCount} day(s) = ₹${foodCost.toLocaleString("en-IN")}`;
+                if (document.getElementById("foodPresetCustom")) document.getElementById("foodPresetCustom").classList.add("active");
+                const customBox = document.getElementById("customFoodInputBox");
+                if (customBox) customBox.style.display = "block";
+            } else if (food.plan_mode === "selected_options") {
+                const selIds = food.selected_option_ids || [];
+                const selItems = (foodOptionsCache || []).filter(f => selIds.includes(f.id));
+                const perPersonSum = selItems.reduce((acc, cur) => acc + cur.estimated_cost_inr, 0);
+                foodCost = Math.round(perPersonSum * travelersCount);
+                foodExplanation = `${selIds.length} selected eatery choice(s) (~₹${perPersonSum.toLocaleString("en-IN")}/person) × ${travelersCount} traveler(s) = ₹${foodCost.toLocaleString("en-IN")}`;
+                if (document.getElementById("foodPresetEateries")) document.getElementById("foodPresetEateries").classList.add("active");
+            } else {
+                foodCost = 0;
+                foodExplanation = "Food planning skipped (₹0 added to budget)";
+                if (document.getElementById("foodPresetNone")) document.getElementById("foodPresetNone").classList.add("active");
+            }
+
+            const foodSummaryEl = document.getElementById("activeFoodSummaryText");
+            if (foodSummaryEl) foodSummaryEl.textContent = foodExplanation;
+
+            // Totals calculation
+            const estimatedMin = totalFees + (stayMinTotal || 0) + foodCost;
+            const estimatedMax = totalFees + (stayMaxTotal !== null ? stayMaxTotal : (stayMinTotal || 0)) + foodCost;
+
+            // Update Breakdown Cards
+            document.getElementById("costEntranceFees").textContent = `₹${totalFees.toLocaleString("en-IN")}`;
+            document.getElementById("costEntranceSub").textContent = `${totalActivitiesCount} destination stop(s)`;
+
+            const stayCostText = stayMinTotal === null
+                ? (stay ? "Tariff unlisted" : "₹0")
+                : stayMinTotal === stayMaxTotal
+                    ? `₹${stayMinTotal.toLocaleString("en-IN")}`
+                    : `₹${stayMinTotal.toLocaleString("en-IN")}–₹${stayMaxTotal.toLocaleString("en-IN")}`;
+            document.getElementById("costAccommodation").textContent = stayCostText;
+            document.getElementById("costAccommodationSub").textContent = stay ? `${stay.name} (${stay.nights} night${stay.nights > 1 ? 's' : ''})` : "No stay selected";
+
+            document.getElementById("costFood").textContent = `₹${foodCost.toLocaleString("en-IN")}`;
+            document.getElementById("costFoodSub").textContent = food.plan_mode === "none" ? "Plan skipped" : `${travelersCount} traveler${travelersCount > 1 ? 's' : ''} · ${daysCount} day${daysCount > 1 ? 's' : ''}`;
+
+            let totalEstimateStr = `₹${estimatedMin.toLocaleString("en-IN")}`;
+            if (stay && stayMinTotal === null) {
+                totalEstimateStr += " + stay tariff unlisted";
+            } else if (stay && stayMaxTotal !== null && stayMaxTotal !== stayMinTotal) {
+                totalEstimateStr += `–₹${estimatedMax.toLocaleString("en-IN")}`;
+            }
+            document.getElementById("costTotal").textContent = totalEstimateStr;
+            document.getElementById("totalItinFees").textContent = totalEstimateStr;
+
+            const plannedBudget = Number(document.getElementById("itinBudget").value || itineraryPlan.budget || 0);
+            document.getElementById("costBudgetStatus").textContent = plannedBudget > 0 ? `Trip Budget: ₹${plannedBudget.toLocaleString("en-IN")}` : "No budget specified";
+
+            // Dynamic Budget Warning
+            if (stay && stayMinTotal === null) {
+                warningBox.className = "budget-alert warning";
+                warningBox.textContent = "⚠️ The selected accommodation has no published tariff; the estimate combines entrance fees and food only. Contact the property to verify room rates.";
+            } else if (plannedBudget > 0 && estimatedMin > plannedBudget) {
+                warningBox.className = "budget-alert warning";
+                const excess = estimatedMin - plannedBudget;
+                warningBox.innerHTML = `⚠️ <strong>Budget Exceeded:</strong> The estimated trip total of <strong>₹${estimatedMin.toLocaleString("en-IN")}</strong> is <strong>₹${excess.toLocaleString("en-IN")}</strong> over your <strong>₹${plannedBudget.toLocaleString("en-IN")}</strong> budget. Consider switching to budget-friendly stays, adjusting meals, or raising your trip budget.`;
+            } else if (plannedBudget > 0 && stay && estimatedMax > plannedBudget) {
+                warningBox.className = "budget-alert warning";
+                warningBox.innerHTML = `⚠️ <strong>Tariff Range Alert:</strong> The upper accommodation range could bring the total to <strong>₹${estimatedMax.toLocaleString("en-IN")}</strong>, which exceeds your <strong>₹${plannedBudget.toLocaleString("en-IN")}</strong> budget.`;
+            } else if (plannedBudget > 0 && estimatedMin <= plannedBudget) {
+                warningBox.className = "budget-alert success";
+                const remainder = plannedBudget - estimatedMin;
+                warningBox.innerHTML = `✓ <strong>Within Budget:</strong> Estimated trip total of <strong>₹${estimatedMin.toLocaleString("en-IN")}</strong> fits comfortably within your <strong>₹${plannedBudget.toLocaleString("en-IN")}</strong> budget (<strong>₹${remainder.toLocaleString("en-IN")}</strong> remaining).`;
+            } else {
+                warningBox.className = "budget-alert info";
+                warningBox.textContent = `ℹ️ Total estimated cost is ${totalEstimateStr}. Enter a Trip Budget above to activate live budget tracking and warnings.`;
+            }
+        }
+
+        function removeActivity(dayIdx, actIdx) {
+            itineraryPlan.days[dayIdx].activities.splice(actIdx, 1);
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        function addCustomPlaceToDay(dayIdx) {
+            const name = prompt("Enter attraction name to visit:");
+            if (!name) return;
+            const fee = Number(prompt("Estimated entrance fee in INR (or 0 for free):", "0")) || 0;
+            const timeSlot = prompt("Visiting period (Morning, Afternoon, Evening):", "Morning") || "Morning";
+
+            itineraryPlan.days[dayIdx].activities.push({
+                destination_id: 1,
+                name: name,
+                time_slot: timeSlot,
+                fee: fee
+            });
+            saveItinLocal();
+            renderItineraryPlanner();
+        }
+
+        async function saveItineraryToBackend() {
+            if (!authToken) {
+                openAuthModal("login");
+                return;
+            }
+            const title = document.getElementById("itinTitle").value.trim() || "My India Tour";
+            const budget = Number(document.getElementById("itinBudget").value) || 0;
+            const travelers = Math.max(1, Number(document.getElementById("itinTravelers").value) || 1);
+
+            itineraryPlan.title = title;
+            itineraryPlan.budget = budget;
+            itineraryPlan.travelers_count = travelers;
+
+            const daysPayload = itineraryPlan.days.map(d => ({
+                day_number: d.day,
+                notes: `Day ${d.day} activities`,
+                activities: (d.activities || []).map((a, idx) => ({
+                    destination_id: a.destination_id || 1,
+                    order_index: idx + 1,
+                    time_slot: a.time_slot || "Morning",
+                    planned_hours: 2.0,
+                    notes: a.name
+                }))
+            }));
+
+            const foodPayload = (itineraryPlan.food && itineraryPlan.food.plan_mode !== "none") ? {
+                plan_mode: itineraryPlan.food.plan_mode,
+                daily_budget_per_person: itineraryPlan.food.daily_budget_per_person,
+                travelers_count: travelers,
+                selected_option_ids: itineraryPlan.food.selected_option_ids || [],
+                notes: itineraryPlan.food.notes || ""
+            } : { plan_mode: "none" };
+
+            const accommodationPayload = itineraryPlan.accommodation ? {
+                accommodation_id: itineraryPlan.accommodation.accommodation_id,
+                nights: Number(itineraryPlan.accommodation.nights) || 1
+            } : null;
+
+            const requestBody = {
+                title: title,
+                total_budget: budget,
+                travelers_count: travelers,
+                days: daysPayload,
+                accommodation: accommodationPayload,
+                food: foodPayload
+            };
+
+            try {
+                const method = itineraryPlan.id ? "PUT" : "POST";
+                const url = itineraryPlan.id ? `${API_BASE}/itineraries/${itineraryPlan.id}` : `${API_BASE}/itineraries`;
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Failed to save itinerary");
+
+                itineraryPlan.id = data.id;
+                saveItinLocal();
+                renderItineraryPlanner();
+
+                const statusText = document.getElementById("itinStatusText");
+                statusText.textContent = itineraryPlan.id ? "Itinerary updated successfully!" : "Itinerary saved to your account!";
+                setTimeout(() => { statusText.textContent = ""; }, 4000);
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        // ==============================================================
+        // Saved Itineraries History Modal Functions
+        // ==============================================================
+        async function openSavedItinerariesModal() {
+            if (!authToken) {
+                openAuthModal("login");
+                return;
+            }
+            const modal = document.getElementById("savedItinerariesModal");
+            const listEl = document.getElementById("savedItinerariesList");
+            if (!modal || !listEl) return;
+            modal.classList.add("active");
+            listEl.innerHTML = `<p style="color:var(--muted); padding:16px;">Loading your saved itineraries...</p>`;
+
+            try {
+                const res = await fetch(`${API_BASE}/itineraries`, {
+                    headers: { "Authorization": `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error("Could not load itineraries");
+                const data = await res.json();
+                const itins = data.itineraries || [];
+
+                if (itins.length === 0) {
+                    listEl.innerHTML = `<p style="color:var(--muted); padding:20px; text-align:center;">You haven't saved any itineraries yet. Create and save a trip in the Itinerary Planner!</p>`;
+                    return;
+                }
+
+                listEl.innerHTML = itins.map(it => {
+                    const daysCount = it.days ? it.days.length : 1;
+                    const travelers = it.travelers_count || 1;
+                    const stayName = it.accommodation ? `${it.accommodation.name} (${it.accommodation.nights}n)` : "No stay";
+                    const foodText = it.food ? `${it.food.plan_mode === 'daily_budget' ? 'Daily budget' : it.food.plan_mode} (₹${it.estimated_food_cost || 0})` : "No food plan";
+                    const totalStr = it.estimated_total_min !== null
+                        ? (it.estimated_total_min === it.estimated_total_max ? `₹${it.estimated_total_min.toLocaleString("en-IN")}` : `₹${it.estimated_total_min.toLocaleString("en-IN")}–₹${(it.estimated_total_max||0).toLocaleString("en-IN")}`)
+                        : "₹0";
+
+                    return `
+                        <div class="saved-itin-card">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                <h4>${escapeHtml(it.title)}</h4>
+                                <span style="font-weight:700; color:var(--primary); font-size:15px;">${totalStr}</span>
+                            </div>
+                            <div class="saved-itin-meta">
+                                📅 ${daysCount} Day${daysCount > 1 ? 's' : ''} · 👥 ${travelers} Traveler${travelers > 1 ? 's' : ''} · Budget: ₹${Number(it.total_budget || 0).toLocaleString("en-IN")}
+                            </div>
+                            <div class="saved-itin-breakdown">
+                                <span class="saved-itin-badge">🎟️ Fees: ₹${it.estimated_entrance_fee || 0}</span>
+                                <span class="saved-itin-badge">🏨 Stay: ${escapeHtml(stayName)}</span>
+                                <span class="saved-itin-badge">🍽️ Food: ${escapeHtml(foodText)}</span>
+                                ${it.budget_exceeded ? '<span class="saved-itin-badge" style="background:#fee4e2; color:#b42318;">⚠️ Over Budget</span>' : '<span class="saved-itin-badge" style="background:#ecfdf3; color:#027a48;">✓ Within Budget</span>'}
+                            </div>
+                            <div style="display:flex; gap:8px; margin-top:8px;">
+                                <button type="button" class="btn-primary" style="flex:1; padding:6px 10px; font-size:12px; margin-top:0;" onclick='loadSavedItineraryIntoPlanner(${JSON.stringify(it).replace(/'/g, "&#39;")})'>
+                                    Load & Edit in Planner
+                                </button>
+                                <button type="button" class="btn-secondary" style="color:var(--danger); border-color:var(--danger); padding:6px 12px; font-size:12px;" onclick="deleteSavedItinerary(${it.id})">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+            } catch(e) {
+                listEl.innerHTML = `<p style="color:var(--danger); padding:16px;">Error loading itineraries: ${e.message}</p>`;
+            }
+        }
+
+        function closeSavedItinerariesModal(event) {
+            const modal = document.getElementById("savedItinerariesModal");
+            if (modal) modal.classList.remove("active");
+        }
+
+        function loadSavedItineraryIntoPlanner(itin) {
+            itineraryPlan.id = itin.id;
+            itineraryPlan.title = itin.title || "My Saved Trip";
+            itineraryPlan.budget = itin.total_budget || 0;
+            itineraryPlan.travelers_count = itin.travelers_count || 1;
+
+            if (itin.accommodation) {
+                itineraryPlan.accommodation = {
+                    accommodation_id: itin.accommodation.accommodation_id,
+                    name: itin.accommodation.name,
+                    property_type: itin.accommodation.property_type || "Hotel",
+                    city: itin.accommodation.city,
+                    area: itin.accommodation.area,
+                    nights: itin.accommodation.nights || 1,
+                    price_min_inr: itin.accommodation.nightly_min_inr,
+                    price_max_inr: itin.accommodation.nightly_max_inr,
+                    is_budget_friendly: itin.accommodation.nightly_min_inr !== null && itin.accommodation.nightly_min_inr <= 1500
+                };
+            } else {
+                itineraryPlan.accommodation = null;
+            }
+
+            if (itin.food) {
+                itineraryPlan.food = {
+                    plan_mode: itin.food.plan_mode,
+                    daily_budget_per_person: itin.food.daily_budget_per_person,
+                    travelers_count: itin.food.travelers_count || itineraryPlan.travelers_count,
+                    selected_option_ids: (itin.food.selected_options || []).map(o => o.id),
+                    notes: itin.food.notes || ""
+                };
+            } else {
+                itineraryPlan.food = { plan_mode: "none", daily_budget_per_person: 0, travelers_count: itineraryPlan.travelers_count, selected_option_ids: [] };
+            }
+
+            itineraryPlan.days = (itin.days || []).map(d => ({
+                day: d.day_number,
+                activities: (d.activities || []).map(act => ({
+                    destination_id: act.destination_id,
+                    name: act.destination ? act.destination.Name : (act.notes || "Attraction"),
+                    city: act.destination ? act.destination.City : "",
+                    time_slot: act.time_slot || "Morning",
+                    fee: act.destination ? (act.destination["Entrance Fee in INR"] || 0) : 0
+                }))
+            }));
+
+            saveItinLocal();
+            closeSavedItinerariesModal();
+            showView("itinerary");
+            renderItineraryPlanner();
+
+            document.getElementById("itinStatusText").textContent = `Loaded trip "${itineraryPlan.title}" for editing.`;
+            setTimeout(() => { document.getElementById("itinStatusText").textContent = ""; }, 4000);
+        }
+
+        async function deleteSavedItinerary(itinId) {
+            if (!confirm("Are you sure you want to delete this saved itinerary?")) return;
+            try {
+                const res = await fetch(`${API_BASE}/itineraries/${itinId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error("Could not delete itinerary");
+                if (itineraryPlan.id === itinId) {
+                    itineraryPlan.id = null;
+                    saveItinLocal();
+                }
+                await openSavedItinerariesModal();
+            } catch(e) {
+                alert(`Delete failed: ${e.message}`);
+            }
+        }
+
+        // AI Assistant Chat Handler
+        async function handleChatSubmit(event) {
+            event.preventDefault();
+            const input = document.getElementById("chatInput");
+            const q = input.value.trim();
+            if (!q) return;
+
+            const chat = document.getElementById("chatHistory");
+            const userBubble = document.createElement("div");
+            userBubble.className = "chat-bubble user";
+            userBubble.textContent = q;
+            chat.appendChild(userBubble);
+            input.value = "";
+
+            const botBubble = document.createElement("div");
+            botBubble.className = "chat-bubble bot";
+            botBubble.textContent = "Checking verified tourism dataset...";
+            chat.appendChild(botBubble);
+            chat.scrollTop = chat.scrollHeight;
+
+            try {
+                const res = await fetch(`${API_BASE}/assistant/chat`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query: q })
+                });
+                const data = await res.json();
+                botBubble.innerHTML = renderMarkdown(data.answer);
+            } catch (err) {
+                botBubble.textContent = "Could not connect to the assistant backend. Please verify FastAPI is running.";
+            }
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function renderMarkdown(text) {
+            if (!text) return "";
+            return escapeHtml(text)
+                .replace(/^### (.*$)/gim, '<h4 style="color: var(--primary-dark); margin: 8px 0 6px; font-size: 15px;">$1</h4>')
+                .replace(/^• (.*$)/gim, '<div style="margin: 3px 0 3px 8px; line-height: 1.5;">• $1</div>')
+                .replace(/^ {2}• (.*$)/gim, '<div style="margin: 2px 0 2px 22px; line-height: 1.4; font-size: 13px;">• $1</div>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n\n/g, '<div style="height: 8px;"></div>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
